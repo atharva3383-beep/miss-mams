@@ -1234,7 +1234,9 @@ window.saveStaff=async function(){
   if(!name){toast('Enter name');return;}
   const pinRaw=document.getElementById('sfPin').value.toString().trim();
   if(pinRaw && pinRaw.length!==4){toast('PIN must be exactly 4 digits');return;}
+  const id = editSid || ('s_'+Date.now());
   const rec={
+    id:id,
     name:name,
     branch:document.getElementById('sfBranch').value||'MM1',
     role:document.getElementById('sfRole').value.trim()||'',
@@ -1244,32 +1246,15 @@ window.saveStaff=async function(){
     baseOut:document.getElementById('sfOut').value||'20:30',
     pin:pinRaw
   };
-  console.log('Saving staff:', rec);
-  toast('Saving...');
-  try{
-    if(editSid){
-      rec.id=editSid;
-      await fbSet('staff/'+editSid, rec);
-      const idx=DB.staff.findIndex(s=>s.id===editSid);
-      if(idx>=0)DB.staff[idx]=rec; else DB.staff.push(rec);
-      closeM('staffModal');rStaff();renderGrid();toast('✅ Staff updated!','g');
-    } else {
-      const k=await fbPush('staff', rec);
-      console.log('Push result key:', k);
-      if(k){
-        rec.id=k;
-        DB.staff.push(rec);
-        closeM('staffModal');
-        await loadAll();
-        rStaff();renderGrid();toast('✅ Staff saved!','g');
-      } else {
-        toast('❌ Save failed — Firebase rejected','r');
-      }
-    }
-  }catch(e){
-    console.error('saveStaff error:',e);
-    toast('❌ Error: '+e.message,'r');
-  }
+  // Save locally first — instant UI update
+  const idx=DB.staff.findIndex(s=>s.id===id);
+  if(idx>=0) DB.staff[idx]=rec; else DB.staff.push(rec);
+  closeM('staffModal'); rStaff(); renderGrid();
+  toast('✅ Saved!','g');
+  // Then sync to Firebase in background using fixed key
+  fbSet('staff/'+id, rec).then(r=>{
+    if(!r) toast('⚠️ Cloud sync failed','r');
+  });
 };
 window.delStaff=async function(id){
   if(!conf('Are you sure? Delete this staff member?'))return;
