@@ -631,8 +631,7 @@ async function loadAll() {
   DB.disc     = toArr(data.disc);
   DB.feedback = toArr(data.feedback);
 
-  // Seed demo staff if none
-  if (!DB.staff.length) await seedStaff();
+  // No demo staff — owner adds staff manually
 }
 
 async function seedStaff() {
@@ -1260,7 +1259,9 @@ window.saveStaff=async function(){
       if(k){
         rec.id=k;
         DB.staff.push(rec);
-        closeM('staffModal');rStaff();renderGrid();toast('✅ Staff saved!','g');
+        closeM('staffModal');
+        await loadAll();
+        rStaff();renderGrid();toast('✅ Staff saved!','g');
       } else {
         toast('❌ Save failed — Firebase rejected','r');
       }
