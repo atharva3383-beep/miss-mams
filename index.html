@@ -555,7 +555,7 @@ const OWNER_PIN = '0000';
 const LEAVE_LIMIT = 4;
 const SVCS = ['Cleanup','Face Wax','Facial','Hair Colour','Hair Spa','Haircut','Hairwash','Hand Wax','Threadwork','Upperlip'];
 
-let FIREBASE_URL = localStorage.getItem('mm_firebase_url') || 'https://mm-dashboard-c5b40-default-rtdb.firebaseio.com';
+const FIREBASE_URL = 'https://mm-dashboard-c5b40-default-rtdb.firebaseio.com';
 let DB = { staff:[], logs:[], attend:[], targets:[], leaves:[], disc:[], feedback:[] };
 let listeners = {}; // SSE listeners
 
@@ -686,11 +686,7 @@ function setSyncStatus(ok) {
 
 // ══ INIT ══
 window.addEventListener('load', async () => {
-  document.getElementById('loadLogo').src = 'logo.png';
-  if (!FIREBASE_URL) {
-    FIREBASE_URL = 'https://mm-dashboard-c5b40-default-rtdb.firebaseio.com';
-    localStorage.setItem('mm_firebase_url', FIREBASE_URL);
-  }
+  document.getElementById('loadLogo').src = 'logo.jpg';
   await initApp();
 });
 
@@ -1237,36 +1233,41 @@ window.openStaffModal=function(id){
 window.saveStaff=async function(){
   const name=document.getElementById('sfName').value.trim();
   if(!name){toast('Enter name');return;}
-  const pinVal=document.getElementById('sfPin').value.toString().trim();
-  if(pinVal&&(pinVal.length!==4||isNaN(pinVal))){toast('PIN must be 4 digits');return;}
+  const pinRaw=document.getElementById('sfPin').value.toString().trim();
+  if(pinRaw && pinRaw.length!==4){toast('PIN must be exactly 4 digits');return;}
   const rec={
-    name,
-    branch:document.getElementById('sfBranch').value,
-    role:document.getElementById('sfRole').value.trim(),
+    name:name,
+    branch:document.getElementById('sfBranch').value||'MM1',
+    role:document.getElementById('sfRole').value.trim()||'',
     salary:parseFloat(document.getElementById('sfSalary').value)||0,
     defaultTarget:parseFloat(document.getElementById('sfTarget').value)||0,
     baseIn:document.getElementById('sfIn').value||'10:00',
     baseOut:document.getElementById('sfOut').value||'20:30',
-    pin:pinVal
+    pin:pinRaw
   };
+  console.log('Saving staff:', rec);
   toast('Saving...');
-  try {
+  try{
     if(editSid){
       rec.id=editSid;
-      const res=await fbSet(`staff/${editSid}`,rec);
-      if(res!==null){
-        const idx=DB.staff.findIndex(s=>s.id===editSid);
-        if(idx>=0)DB.staff[idx]=rec;
-        else DB.staff.push(rec);
-      }
+      await fbSet('staff/'+editSid, rec);
+      const idx=DB.staff.findIndex(s=>s.id===editSid);
+      if(idx>=0)DB.staff[idx]=rec; else DB.staff.push(rec);
+      closeM('staffModal');rStaff();renderGrid();toast('✅ Staff updated!','g');
     } else {
-      const k=await fbPush('staff',rec);
-      if(k){rec.id=k;DB.staff.push(rec);}
-      else{toast('Save failed — check Firebase rules','r');return;}
+      const k=await fbPush('staff', rec);
+      console.log('Push result key:', k);
+      if(k){
+        rec.id=k;
+        DB.staff.push(rec);
+        closeM('staffModal');rStaff();renderGrid();toast('✅ Staff saved!','g');
+      } else {
+        toast('❌ Save failed — Firebase rejected','r');
+      }
     }
-    closeM('staffModal');rStaff();renderGrid();toast('✅ Staff saved!','g');
-  } catch(e){
-    toast('Error: '+e.message,'r');
+  }catch(e){
+    console.error('saveStaff error:',e);
+    toast('❌ Error: '+e.message,'r');
   }
 };
 window.delStaff=async function(id){
