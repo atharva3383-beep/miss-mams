@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Miss & Mam's</title>
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
@@ -26,13 +25,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg)}
 .ls{color:var(--gold-l);font-size:.75rem}
 .spinner{width:36px;height:36px;border:3px solid rgba(201,168,76,.3);border-top-color:var(--gold-l);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-#loadLogo{width:80px;height:80px;object-fit:contain;border-radius:50%;background:#fff;padding:5px}
 
 /* LOGIN */
 #loginScreen{background:linear-gradient(145deg,#1A1209,#3D2A0A);align-items:center;justify-content:center;padding:16px}
 .lcard{background:#fff;border-radius:24px;padding:24px 18px 20px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
 .logo-area{text-align:center;margin-bottom:16px}
-.logo-img{width:80px;height:80px;object-fit:contain;border-radius:50%;background:#fff;padding:5px;box-shadow:0 4px 12px rgba(0,0,0,.15);margin:0 auto 8px;display:block;border:2px solid var(--gold-border)}
 .logo-area h2{font-size:1.2rem;font-weight:900;color:var(--gold)}
 .logo-area p{font-size:.7rem;color:var(--muted);margin-top:2px}
 .mode-tabs{display:flex;background:var(--bg);border-radius:10px;padding:3px;margin-bottom:16px}
@@ -74,8 +71,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg)}
 
 /* HEADER */
 .hdr{background:linear-gradient(135deg,#1A1209,#3D2A0A);height:52px;display:flex;align-items:center;padding:0 10px;gap:7px;flex-shrink:0}
-.hlogo{width:34px;height:34px;border-radius:50%;border:2px solid var(--gold-l);overflow:hidden;flex-shrink:0;background:#fff}
-.hlogo img{width:100%;height:100%;object-fit:contain}
 .htitle{color:#fff;font-size:.82rem;font-weight:700;flex:1;line-height:1.2}
 .htitle span{font-size:.58rem;color:var(--gold-l);display:block;font-weight:400}
 .hchip{background:rgba(255,255,255,.12);border-radius:20px;padding:3px 9px;color:var(--gold-l);font-size:.66rem;font-weight:600;white-space:nowrap}
@@ -218,7 +213,6 @@ tr:hover td{background:var(--gold-pale)}
 
 <!-- LOADING -->
 <div id="loadingOverlay">
-  <img id="loadLogo" src="logo.jpg" alt="MM" onerror="this.style.display='none'">
   <div class="lt">Miss &amp; Mam's</div>
   <div class="ls" id="loadStatus">Connecting...</div>
   <div class="spinner"></div>
@@ -228,7 +222,6 @@ tr:hover td{background:var(--gold-pale)}
 <div class="screen hidden" id="loginScreen">
 <div class="lcard">
   <div class="logo-area">
-    <img class="logo-img" src="logo.jpg" alt="MM" onerror="this.style.display='none'">
     <h2>Miss &amp; Mam's</h2>
     <p>Internal Staff Portal</p>
   </div>
@@ -275,7 +268,6 @@ tr:hover td{background:var(--gold-pale)}
 <!-- STAFF SCREEN -->
 <div class="screen hidden" id="staffScreen">
   <div class="hdr">
-    <div class="hlogo"><img src="logo.jpg" alt="MM" onerror="this.style.display='none'"></div>
     <div class="htitle">Miss &amp; Mam's <span id="sHSub">Staff</span></div>
     <span class="hchip" id="sChip">–</span>
     <div class="sdot-wrap"><div class="sdot" id="sDot"></div><span class="stxt" id="sTxt">Live</span></div>
@@ -323,7 +315,6 @@ tr:hover td{background:var(--gold-pale)}
 <!-- OWNER SCREEN -->
 <div class="screen hidden" id="ownerScreen">
   <div class="hdr">
-    <div class="hlogo"><img src="logo.jpg" alt="MM" onerror="this.style.display='none'"></div>
     <div class="htitle">Miss &amp; Mam's <span>Owner Dashboard</span></div>
     <div class="hbranch">
       <button class="hbbtn active" onclick="setBranch('ALL',this)">All</button>
@@ -394,7 +385,8 @@ tr:hover td{background:var(--gold-pale)}
   <div class="macts"><button class="btn bsm" onclick="closeM('timeOutModal')">Cancel</button><button class="btn bsm bpri" onclick="confirmTimeOut()">Confirm ✓</button></div>
 </div></div>
 
-<div class="mbg" id="staffModal"><div class="msh">
+<!-- BUG FIX: staffModal no longer closes on backdrop click (prevents accidental close) -->
+<div class="mbg" id="staffModal" style="z-index:300"><div class="msh" style="max-height:92vh;overflow-y:auto">
   <div class="drag"></div><div class="mtitle">👤 <span id="staffMTitle">Add Staff</span></div>
   <div class="fg2">
     <div class="frow"><label class="flbl">Full Name</label><input class="finp" id="sfName"></div>
@@ -479,61 +471,82 @@ let editEntryId=null, selSvcs=[], editSvcs=[], fbkStaffId=null, oStar=0;
 let activeBranch='ALL', curOTab='overview';
 let feedIdx=0, feedTmr=null, editSid=null;
 
+// ══ FLAG: suppress Firebase callbacks from triggering login UI while owner is logged in ══
+let appReady = false;
+
 // ══ FIREBASE HELPERS ══
-function ref(path){ return db.ref(path); }
+function fbRef(path){ return db.ref(path); }
 
 function setSync(ok){
-  ['sDot','oDot'].forEach(id=>{ const e=document.getElementById(id); if(e)e.className='sdot'+(ok?'':' off'); });
-  ['sTxt','oTxt'].forEach(id=>{ const e=document.getElementById(id); if(e)e.textContent=ok?'Live':'Offline'; });
+  ['sDot','oDot'].forEach(id=>{ const e=document.getElementById(id); if(e) e.className='sdot'+(ok?'':' off'); });
+  ['sTxt','oTxt'].forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent=ok?'Live':'Offline'; });
 }
 
-// Save single record
 function fbSave(path, id, data){
-  return ref(path+'/'+id).set(data).then(()=>setSync(true)).catch(e=>{ setSync(false); console.error(e); });
+  return fbRef(path+'/'+id).set(data).then(()=>setSync(true)).catch(e=>{ setSync(false); console.error(e); });
 }
-// Delete single record
 function fbDel(path, id){
-  return ref(path+'/'+id).remove().then(()=>setSync(true)).catch(e=>{ setSync(false); console.error(e); });
+  return fbRef(path+'/'+id).remove().then(()=>setSync(true)).catch(e=>{ setSync(false); console.error(e); });
 }
-// Delete entire node
 function fbClear(path){
-  return ref(path).remove().then(()=>setSync(true)).catch(e=>setSync(false));
+  return fbRef(path).remove().then(()=>setSync(true)).catch(()=>setSync(false));
 }
 
-// Convert object to array
 function arr(obj){ return obj ? Object.values(obj) : []; }
 function arrStaff(){ return arr(DATA.staff); }
 function filtStaff(){ const s=arrStaff(); return activeBranch==='ALL'?s:s.filter(x=>x.branch===activeBranch); }
 
-// ══ INIT — Listen to all Firebase paths ══
+// ══ INIT ══
 window.addEventListener('load', ()=>{
   document.getElementById('loadStatus').textContent = 'Connecting to Firebase...';
   const paths = ['staff','logs','attend','targets','leaves','disc','feedback'];
   let loaded = 0;
+
   paths.forEach(p=>{
-    ref(p).on('value', snap=>{
+    fbRef(p).on('value', snap=>{
       DATA[p] = snap.val() || {};
       loaded++;
-      if(loaded >= paths.length){
+
+      // First load: show login screen
+      if(!appReady && loaded >= paths.length){
+        appReady = true;
         document.getElementById('loadingOverlay').style.display='none';
-        document.getElementById('loginScreen').classList.remove('hidden');
+        show('loginScreen');
         renderGrid();
         setSync(true);
       }
-      // Refresh UI if logged in
-      if(session.role==='staff') refreshStaff();
-      if(session.role==='owner') { const fns={overview:rOverview,alerts:rAlerts,staff:rStaff,logs:rLogs,attend:rAttend,targets:rTargets,rank:rRank,leaves:rLeaves,monthly:rMonthly,salary:rSalary,services:rServices,feedback:rFeedback}; fns[curOTab]?.(); }
+
+      // BUG FIX: only refresh UI if already logged in — never touch login screen after appReady
+      if(appReady){
+        if(session.role==='staff') refreshStaff();
+        if(session.role==='owner'){
+          // BUG FIX: don't re-render if a modal is open (prevents pin screen flash)
+          if(!isAnyModalOpen()) refreshOwnerTab();
+        }
+        setSync(true);
+      }
     }, ()=>setSync(false));
   });
+
   // Timeout fallback
   setTimeout(()=>{
-    if(document.getElementById('loadingOverlay').style.display!=='none'){
+    if(!appReady){
+      appReady = true;
       document.getElementById('loadingOverlay').style.display='none';
-      document.getElementById('loginScreen').classList.remove('hidden');
+      show('loginScreen');
       renderGrid();
     }
   }, 8000);
 });
+
+function isAnyModalOpen(){
+  return [...document.querySelectorAll('.mbg')].some(m=>m.classList.contains('open'));
+}
+
+function refreshOwnerTab(){
+  const fns={overview:rOverview,alerts:rAlerts,staff:rStaff,logs:rLogs,attend:rAttend,targets:rTargets,rank:rRank,leaves:rLeaves,monthly:rMonthly,salary:rSalary,services:rServices,feedback:rFeedback};
+  fns[curOTab]?.();
+}
 
 // ══ HELPERS ══
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
@@ -569,18 +582,23 @@ window.setMode=function(m,btn){
   if(btn)btn.classList.add('active');
   showStepName();
 };
+
 function showStepName(){
   document.getElementById('stepName').style.display='block';
   document.getElementById('stepPin').style.display='none';
   renderGrid();
 }
+
 function renderGrid(){
   const grid=document.getElementById('nameGrid');
   const ow=document.getElementById('ownerBtnWrap');
   if(loginMode==='owner'){grid.innerHTML='';ow.style.display='block';return;}
   ow.style.display='none';
   const staff=arrStaff();
-  if(!staff.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;font-size:.8rem">No staff yet.<br>Login as Owner to add.</div>';return;}
+  if(!staff.length){
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:20px;font-size:.8rem">No staff yet.<br>Login as Owner to add.</div>';
+    return;
+  }
   grid.innerHTML=staff.map(s=>`<button class="nbtn" onclick="startPin('${s.id}')">
     <div class="av">${s.name.slice(0,2).toUpperCase()}</div>
     <div class="nn">${s.name.split(' ')[0]}</div>
@@ -589,26 +607,32 @@ function renderGrid(){
 }
 
 window.startPin=function(id){
-  if(id==='owner'){pinTarget='owner';document.getElementById('pWhoName').textContent='Owner';document.getElementById('pWhoAv').textContent='👑';}
-  else{
+  if(id==='owner'){
+    pinTarget='owner';
+    document.getElementById('pWhoName').textContent='Owner';
+    document.getElementById('pWhoAv').textContent='👑';
+  } else {
     const s=DATA.staff&&DATA.staff[id];
-    if(!s){toast('Staff not found');return;}
-    if(!s.pin){toast('No PIN set');return;}
+    if(!s){toast('Staff not found','r');return;}
+    if(!s.pin){toast('No PIN set','r');return;}
     pinTarget=id;
     document.getElementById('pWhoName').textContent=s.name.split(' ')[0];
     document.getElementById('pWhoAv').textContent=s.name.slice(0,2).toUpperCase();
   }
-  pinBuf='';wrongAttempts=0;locked=false;
+  pinBuf=''; wrongAttempts=0; locked=false;
   if(lockTimer){clearInterval(lockTimer);lockTimer=null;}
   document.getElementById('lockBox').style.display='none';
   document.getElementById('pinErr').textContent='';
-  resetDots();renderBoxes();enableKP();
+  resetDots(); renderBoxes(); enableKP();
   document.getElementById('stepName').style.display='none';
   document.getElementById('stepPin').style.display='block';
 };
+
 window.backToNames=function(){pinBuf='';pinTarget=null;showStepName();};
+
 window.kp=function(d){if(locked||pinBuf.length>=4)return;pinBuf+=d;renderBoxes();if(pinBuf.length===4)setTimeout(verifyPin,120);};
 window.kpDel=function(){if(locked)return;pinBuf=pinBuf.slice(0,-1);renderBoxes();document.getElementById('pinErr').textContent='';};
+
 function renderBoxes(){
   for(let i=0;i<4;i++){
     const b=document.getElementById('pb'+i);b.innerHTML='';b.className='pbox';
@@ -617,13 +641,14 @@ function renderBoxes(){
     b.style.borderColor='';b.style.background='';
   }
 }
+
 function verifyPin(){
   let ok=false;
-  if(pinTarget==='owner')ok=(pinBuf===OWNER_PIN);
+  if(pinTarget==='owner') ok=(pinBuf===OWNER_PIN);
   else{ const s=DATA.staff&&DATA.staff[pinTarget]; ok=s&&String(s.pin)===String(pinBuf); }
   if(ok){
     for(let i=0;i<4;i++){const b=document.getElementById('pb'+i);b.style.borderColor='var(--green)';b.style.background='var(--green-bg)';}
-    setTimeout(()=>{ if(pinTarget==='owner')launchOwner(); else launchStaff(DATA.staff[pinTarget]); },200);
+    setTimeout(()=>{ if(pinTarget==='owner') launchOwner(); else launchStaff(DATA.staff[pinTarget]); },200);
   } else {
     wrongAttempts++;
     const ad=document.getElementById('ad'+(wrongAttempts-1));if(ad)ad.classList.add('used');
@@ -633,11 +658,16 @@ function verifyPin(){
     setTimeout(()=>{if(wrongAttempts>=5)startLock();else renderBoxes();},700);
   }
 }
+
 function startLock(){
   locked=true;let s=60;
-  document.getElementById('lockBox').style.display='block';document.getElementById('lkCnt').textContent=s;
+  document.getElementById('lockBox').style.display='block';
+  document.getElementById('lkCnt').textContent=s;
   disableKP();renderBoxes();
-  lockTimer=setInterval(()=>{s--;document.getElementById('lkCnt').textContent=s;if(s<=0){clearInterval(lockTimer);lockTimer=null;locked=false;wrongAttempts=0;document.getElementById('lockBox').style.display='none';resetDots();enableKP();}},1000);
+  lockTimer=setInterval(()=>{
+    s--;document.getElementById('lkCnt').textContent=s;
+    if(s<=0){clearInterval(lockTimer);lockTimer=null;locked=false;wrongAttempts=0;document.getElementById('lockBox').style.display='none';resetDots();enableKP();}
+  },1000);
 }
 function resetDots(){for(let i=0;i<5;i++)document.getElementById('ad'+i)?.classList.remove('used');}
 function enableKP(){document.querySelectorAll('.kp').forEach(b=>b.classList.remove('off'));}
@@ -656,15 +686,21 @@ function launchStaff(st){
   }
   sNav('home',0);
 }
+
 function launchOwner(){
   session={role:'owner',staffId:null};
   hide('loginScreen');hide('staffScreen');show('ownerScreen');
+  // BUG FIX: explicitly close any open modals before rendering
+  document.querySelectorAll('.mbg').forEach(m=>m.classList.remove('open'));
   oTab('overview',document.querySelector('#oNav button'));
 }
+
 window.logout=function(){
   session={role:null,staffId:null};pinBuf='';pinTarget=null;wrongAttempts=0;locked=false;
   if(lockTimer){clearInterval(lockTimer);lockTimer=null;}
   if(feedTmr){clearInterval(feedTmr);feedTmr=null;}
+  // Close all modals
+  document.querySelectorAll('.mbg').forEach(m=>m.classList.remove('open'));
   show('loginScreen');hide('staffScreen');hide('ownerScreen');
   loginMode='staff';
   document.querySelectorAll('.mtab').forEach((b,i)=>b.classList.toggle('active',i===0));
@@ -688,7 +724,7 @@ document.getElementById('toTime').addEventListener('change',function(){
 });
 
 window.confirmTimeIn=function(){
-  const tin=document.getElementById('tiTime').value;if(!tin){toast('Enter time');return;}
+  const tin=document.getElementById('tiTime').value;if(!tin){toast('Enter time','r');return;}
   const sid=session.staffId;const s=DATA.staff[sid];
   const base=s?.baseIn||'10:00';const late=lateMins(tin,base);
   const id='att_'+sid+'_'+today().replace(/-/g,'');
@@ -711,7 +747,7 @@ window.handlePunch=function(){
 };
 
 window.confirmTimeOut=function(){
-  const tout=document.getElementById('toTime').value;if(!tout){toast('Enter time');return;}
+  const tout=document.getElementById('toTime').value;if(!tout){toast('Enter time','r');return;}
   const sid=session.staffId;const s=DATA.staff[sid];
   const baseOut=s?.baseOut||'20:30';
   const id='att_'+sid+'_'+today().replace(/-/g,'');
@@ -727,11 +763,13 @@ window.confirmTimeOut=function(){
 // ══ STAFF HOME ══
 window.sNav=function(v,i){
   document.querySelectorAll('.sbn').forEach((b,j)=>b.classList.toggle('active',j===i));
-  if(v==='home')refreshStaff();
-  else if(v==='log')openBig('📋 My History',buildHistory());
-  else if(v==='rank')openBig('🏆 This Week',buildRankView());
+  if(v==='home') refreshStaff();
+  else if(v==='log') openBig('📋 My History',buildHistory());
+  else if(v==='rank') openBig('🏆 This Week',buildRankView());
   else if(v==='leave'){
-    document.getElementById('lFrom').value=today();document.getElementById('lTo').value=today();document.getElementById('lReason').value='';
+    document.getElementById('lFrom').value=today();
+    document.getElementById('lTo').value=today();
+    document.getElementById('lReason').value='';
     document.getElementById('leaveModal').classList.add('open');
   }
 };
@@ -744,6 +782,7 @@ function refreshStaff(){
   const target=getTarget(sid,tod);
   const rem=Math.max(0,target-total);
   const inc=total>target?Math.round((total-target)*.05):0;
+
   document.getElementById('sTarget').textContent=target?'₹'+(target/1000).toFixed(1)+'K':'–';
   document.getElementById('sSales').textContent='₹'+(total/1000).toFixed(1)+'K';
   document.getElementById('sLeft').textContent=rem>0?'₹'+rem.toLocaleString('en-IN'):'✓ Done!';
@@ -753,7 +792,6 @@ function refreshStaff(){
   document.getElementById('eCount').textContent=logs.length;
   document.getElementById('eTotal').textContent='₹'+total.toLocaleString('en-IN');
 
-  // Attendance bar
   const att=getTodayAtt(sid);
   const bar=document.getElementById('attBar');
   const txt=document.getElementById('attTxt');
@@ -768,6 +806,7 @@ function refreshStaff(){
     bar.style.cssText='border-radius:9px;padding:6px 10px;font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--red-bg);border:1px solid #fca5a5;color:var(--red)';
     txt.textContent='⚠️ Not clocked in';tme.textContent='';
   }
+
   const pb=document.getElementById('punchBtn');
   if(att&&att.out){pb.textContent='✅ Punched Out';pb.disabled=true;pb.style.opacity='.5';}
   else{pb.textContent='🚪 Punch Out';pb.disabled=false;pb.style.opacity='1';}
@@ -801,24 +840,30 @@ function buildFeed(){
 // ══ CLIENT ENTRY ══
 window.openClientModal=function(){
   selSvcs=[];document.getElementById('cPrice').value='';
-  document.getElementById('customRow').style.display='none';document.getElementById('customSvc').value='';
-  buildSvcBtns('svcGrid',selSvcs);document.getElementById('clientModal').classList.add('open');
+  document.getElementById('customRow').style.display='none';
+  document.getElementById('customSvc').value='';
+  buildSvcBtns('svcGrid',selSvcs);
+  document.getElementById('clientModal').classList.add('open');
   setTimeout(()=>document.getElementById('cPrice').focus(),300);
 };
+
 function buildSvcBtns(gid,ar){
   document.getElementById(gid).innerHTML=SVCS.map(s=>`<button class="sqb${ar.includes(s)?' on':''}" onclick="togSvc(this,'${s}','${gid}')">${s}</button>`).join('')+`<button class="sqb" onclick="togOther()">Other ✏️</button>`;
 }
+
 window.togSvc=function(btn,svc,gid){
-  btn.classList.toggle('on');const a=gid==='svcGrid'?selSvcs:editSvcs;const i=a.indexOf(svc);if(i>=0)a.splice(i,1);else a.push(svc);
+  btn.classList.toggle('on');
+  const a=gid==='svcGrid'?selSvcs:editSvcs;
+  const i=a.indexOf(svc);if(i>=0)a.splice(i,1);else a.push(svc);
 };
 window.togOther=function(){const r=document.getElementById('customRow');r.style.display=r.style.display==='none'?'block':'none';};
 
 window.saveClient=function(){
   const price=parseFloat(document.getElementById('cPrice').value)||0;
-  if(price<=0){toast('Enter a price');return;}
+  if(price<=0){toast('Enter a price','r');return;}
   const custom=document.getElementById('customSvc').value.trim();
   const svcs=[...selSvcs];if(custom)svcs.push(custom);
-  if(!svcs.length){toast('Select a service');return;}
+  if(!svcs.length){toast('Select a service','r');return;}
   const id='log_'+uid();
   fbSave('logs',id,{id,staffId:session.staffId,date:today(),services:svcs,price,ts:Date.now()});
   closeM('clientModal');toast(`✅ ₹${price.toLocaleString('en-IN')} added`,'g');
@@ -836,7 +881,7 @@ window.updateEntry=function(){
   e.price=parseFloat(document.getElementById('ePrice').value)||e.price;
   e.services=[...editSvcs];
   fbSave('logs',editEntryId,e);
-  closeM('editModal');toast('✅ Updated');
+  closeM('editModal');toast('✅ Updated','g');
 };
 window.delEntry=function(){
   if(!confirm('Delete entry?'))return;
@@ -851,10 +896,10 @@ window.delLog=function(id){
 // ══ LEAVE ══
 window.submitLeave=function(){
   const from=document.getElementById('lFrom').value,to=document.getElementById('lTo').value,reason=document.getElementById('lReason').value.trim();
-  if(!from||!to||!reason){toast('Fill all fields');return;}
+  if(!from||!to||!reason){toast('Fill all fields','r');return;}
   const id='lv_'+uid();
   fbSave('leaves',id,{id,staffId:session.staffId,from,to,reason,status:'pending',applied:today()});
-  closeM('leaveModal');toast('✅ Leave submitted!');
+  closeM('leaveModal');toast('✅ Leave submitted!','g');
 };
 
 // ══ HISTORY & RANK ══
@@ -879,6 +924,7 @@ function getWeekRange(d){
   const mon=new Date(new Date(dt).setDate(diff)),sun=new Date(mon);sun.setDate(mon.getDate()+6);
   return{mon:mon.toISOString().slice(0,10),sun:sun.toISOString().slice(0,10)};
 }
+
 function calcScores(range){
   return filtStaff().map(s=>{
     const wl=arr(DATA.logs).filter(l=>l.staffId===s.id&&l.date>=range.mon&&l.date<=range.sun);
@@ -894,11 +940,14 @@ function calcScores(range){
     return{s,total:Math.round(ss*.5+ds*.25+os*.25),ss:Math.round(ss),ds,sales,ot};
   }).sort((a,b)=>b.total-a.total);
 }
+
 function buildRankView(){
-  const sc=calcScores(getWeekRange(today()));const LABS=['Top 🥇','Rising 🌟','Steady ⭐','Effort 💪','Team 🎯'];
+  const sc=calcScores(getWeekRange(today()));
+  const LABS=['Top 🥇','Rising 🌟','Steady ⭐','Effort 💪','Team 🎯'];
   if(!sc.length)return'<p style="color:var(--muted);text-align:center;padding:20px">No data.</p>';
   return`<div class="ibox">50% Sales · 25% Discipline · 25% Overtime</div>`+sc.map((item,i)=>{
-    const isMe=item.s.id===session.staffId;const col=item.total>=80?'var(--green)':item.total>=55?'var(--yellow)':'var(--red)';
+    const isMe=item.s.id===session.staffId;
+    const col=item.total>=80?'var(--green)':item.total>=55?'var(--yellow)':'var(--red)';
     return`<div class="lbc${i===0?' first':''}"><div class="lbr ${i<3?'r'+(i+1):''}">#${i+1}</div><div class="lbav">${item.s.name[0]}</div>
       <div class="lbinfo"><div class="lbname">${item.s.name}${isMe?' <span class="badge bgold" style="font-size:.54rem">You</span>':''}</div>
       <div class="lbmeta">Sales:${item.ss}% Disc:${item.ds} OT:${item.ot.toFixed(1)}h</div>
@@ -910,12 +959,19 @@ function buildRankView(){
 
 // ══ OWNER TABS ══
 window.oTab=function(t,btn){
-  curOTab=t;document.querySelectorAll('#oNav button').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');oc().innerHTML='';
-  const fns={overview:rOverview,alerts:rAlerts,staff:rStaff,logs:rLogs,attend:rAttend,targets:rTargets,rank:rRank,leaves:rLeaves,monthly:rMonthly,salary:rSalary,services:rServices,feedback:rFeedback};
-  fns[t]?.();
+  curOTab=t;
+  document.querySelectorAll('#oNav button').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  oc().innerHTML='';
+  refreshOwnerTab();
 };
-window.setBranch=function(b,el){activeBranch=b;document.querySelectorAll('.hbbtn').forEach(x=>x.classList.remove('active'));el.classList.add('active');window.oTab(curOTab,document.querySelector('#oNav button.active'));};
+
+window.setBranch=function(b,el){
+  activeBranch=b;
+  document.querySelectorAll('.hbbtn').forEach(x=>x.classList.remove('active'));
+  el.classList.add('active');
+  window.oTab(curOTab,document.querySelector('#oNav button.active'));
+};
 
 function rOverview(){
   const fs=filtStaff(),fids=fs.map(s=>s.id);
@@ -926,7 +982,13 @@ function rOverview(){
   const tt=tl.reduce((a,l)=>a+l.price,0),mt=ml.reduce((a,l)=>a+l.price,0),pt=pl.reduce((a,l)=>a+l.price,0);
   const sg=pt>0?Math.round(((mt-pt)/pt)*100):null;
   const pend=arr(DATA.leaves).filter(l=>l.status==='pending').length;
-  let inc=0;fs.forEach(s=>{const s2=ml.filter(l=>l.staffId===s.id).reduce((a,l)=>a+l.price,0);const bd={};ml.filter(l=>l.staffId===s.id).forEach(l=>{if(!bd[l.date])bd[l.date]=0;bd[l.date]+=l.price;});const tg=Object.keys(bd).reduce((a,d)=>a+getTarget(s.id,d),0);if(s2>tg)inc+=(s2-tg)*.05;});
+  let inc=0;
+  fs.forEach(s=>{
+    const s2=ml.filter(l=>l.staffId===s.id).reduce((a,l)=>a+l.price,0);
+    const bd={};ml.filter(l=>l.staffId===s.id).forEach(l=>{if(!bd[l.date])bd[l.date]=0;bd[l.date]+=l.price;});
+    const tg=Object.keys(bd).reduce((a,d)=>a+getTarget(s.id,d),0);
+    if(s2>tg)inc+=(s2-tg)*.05;
+  });
   const gh=p=>p===null?'':p>=0?`<div style="font-size:.62rem;color:var(--green);font-weight:700">↑ +${p}%</div>`:`<div style="font-size:.62rem;color:var(--red);font-weight:700">↓ ${p}%</div>`;
   oc().innerHTML=`<div class="cards">
     <div class="scard"><div class="sci">💰</div><div class="scl">Today</div><div class="scv">₹${tt.toLocaleString('en-IN')}</div><div class="scs">${tl.length} entries</div></div>
@@ -971,17 +1033,23 @@ function rStaff(){
   oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">👥 Staff (${list.length})</div><button class="btn bsm bpri" onclick="openStaffModal()">＋ Add</button></div>
   <div class="tw"><table><thead><tr><th>Name</th><th>Branch</th><th>Salary</th><th>Target</th><th>PIN</th><th>Act</th></tr></thead>
   <tbody>${!list.length?'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No staff</td></tr>':
-  list.map(s=>`<tr><td><b>${s.name}</b><br><span style="font-size:.62rem;color:var(--muted)">${s.role||''}</span></td>
+  list.map(s=>`<tr>
+    <td><b>${s.name}</b><br><span style="font-size:.62rem;color:var(--muted)">${s.role||''}</span></td>
     <td><span class="badge bgold">${s.branch}</span></td>
     <td>₹${(s.salary||0).toLocaleString('en-IN')}</td>
     <td>₹${(s.defaultTarget||0).toLocaleString('en-IN')}</td>
     <td><span class="badge ${s.pin?'bg':'br'}">${s.pin||'–'}</span></td>
-    <td style="white-space:nowrap"><button class="btn bsm bedt" onclick="openStaffModal('${s.id}')">Edit</button> <button class="btn bsm bdng" onclick="delStaff('${s.id}')">Del</button></td></tr>`).join('')}
+    <td style="white-space:nowrap">
+      <button class="btn bsm bedt" onclick="openStaffModal('${s.id}')">Edit</button>
+      <button class="btn bsm bdng" onclick="delStaff('${s.id}')">Del</button>
+    </td></tr>`).join('')}
   </tbody></table></div></div>`;
 }
 
+// BUG FIX: stopPropagation prevents backdrop click from closing staffModal
 window.openStaffModal=function(id){
-  editSid=id||null;const s=id&&DATA.staff&&DATA.staff[id];
+  editSid=id||null;
+  const s=id&&DATA.staff&&DATA.staff[id];
   document.getElementById('staffMTitle').textContent=id?'Edit Staff':'Add Staff';
   document.getElementById('sfName').value=s?.name||'';
   document.getElementById('sfBranch').value=s?.branch||'MM1';
@@ -996,11 +1064,12 @@ window.openStaffModal=function(id){
 
 window.saveStaff=function(){
   const name=document.getElementById('sfName').value.trim();
-  if(!name){toast('Enter name');return;}
+  if(!name){toast('Enter name','r');return;}
   const pin=document.getElementById('sfPin').value.toString().trim();
-  if(!pin||pin.length!==4){toast('PIN must be 4 digits');return;}
+  if(!pin||pin.length!==4||!/^\d{4}$/.test(pin)){toast('PIN must be exactly 4 digits','r');return;}
   const id=editSid||('staff_'+uid());
-  const rec={id,name,
+  const rec={
+    id, name,
     branch:document.getElementById('sfBranch').value||'MM1',
     role:document.getElementById('sfRole').value.trim(),
     salary:parseFloat(document.getElementById('sfSalary').value)||0,
@@ -1009,8 +1078,13 @@ window.saveStaff=function(){
     baseOut:document.getElementById('sfOut').value||'20:30',
     pin
   };
-  fbSave('staff',id,rec);
-  closeM('staffModal');toast('✅ Staff saved!','g');
+  fbSave('staff',id,rec).then(()=>{
+    toast('✅ Staff saved!','g');
+    // BUG FIX: close modal only AFTER save is confirmed, then refresh staff tab
+    closeM('staffModal');
+    // Small delay so Firebase listener doesn't race with modal close
+    setTimeout(()=>rStaff(), 200);
+  });
 };
 
 window.delStaff=function(id){
@@ -1048,10 +1122,10 @@ function rAttend(){
 window.openDiscModal=function(){popSel('dStaff');document.getElementById('dDate').value=today();document.getElementById('discModal').classList.add('open');};
 window.saveDisc=function(){
   const sid=document.getElementById('dStaff').value,date=document.getElementById('dDate').value,type=document.getElementById('dType').value,note=document.getElementById('dNote').value.trim();
-  if(!sid||!date)return;
+  if(!sid||!date){toast('Fill all fields','r');return;}
   const id='disc_'+uid();
   fbSave('disc',id,{id,staffId:sid,date,type,note});
-  closeM('discModal');toast('✅ Logged!');
+  closeM('discModal');toast('✅ Logged!','g');
 };
 window.delDisc=function(id){if(!confirm('Delete?'))return;fbDel('disc',id);toast('Deleted');};
 window.delAllAtt=function(){if(!confirm('Delete all attendance?'))return;fbClear('attend');toast('All deleted','r');};
@@ -1070,11 +1144,11 @@ function rTargets(){
 window.openTargetModal=function(){popSel('tStaff');document.getElementById('tDate').value=today();document.getElementById('tAmt').value='';document.getElementById('targetModal').classList.add('open');};
 window.saveTarget=function(){
   const sid=document.getElementById('tStaff').value,date=document.getElementById('tDate').value,amount=parseFloat(document.getElementById('tAmt').value)||0;
-  if(!sid||!date||!amount){toast('Fill all');return;}
+  if(!sid||!date||!amount){toast('Fill all fields','r');return;}
   const ex=arr(DATA.targets).find(t=>t.staffId===sid&&t.date===date);
   const id=ex?.id||('tgt_'+uid());
   fbSave('targets',id,{id,staffId:sid,date,amount});
-  closeM('targetModal');toast('🎯 Saved!');
+  closeM('targetModal');toast('🎯 Saved!','g');
 };
 window.delTarget=function(id){if(!confirm('Delete?'))return;fbDel('targets',id);toast('Deleted');};
 window.delAllTargets=function(){if(!confirm('Delete all targets?'))return;fbClear('targets');toast('All deleted','r');};
@@ -1084,12 +1158,23 @@ function rRank(){
   <div style="display:flex;align-items:center;gap:6px"><label style="font-size:.62rem;color:var(--muted);font-weight:600">WEEK</label>
   <input type="date" id="lbDate" value="${today()}" onchange="rebuildLB()" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:.73rem;outline:none"></div></div>
   <div class="ibox">50% Sales · 25% Discipline · 25% Overtime</div>
-  <div id="lbList"></div></div>`;rebuildLB();
+  <div id="lbList"></div></div>`;
+  rebuildLB();
 }
 window.rebuildLB=function(){
-  const range=getWeekRange(document.getElementById('lbDate').value||today());
-  const sc=calcScores(range);const LABS=['Top 🥇','Rising 🌟','Steady ⭐','Effort 💪','Team 🎯'];
-  document.getElementById('lbList').innerHTML=sc.map((item,i)=>{const col=item.total>=80?'var(--green)':item.total>=55?'var(--yellow)':'var(--red)';return`<div class="lbc${i===0?' first':''}"><div class="lbr ${i<3?'r'+(i+1):''}">#${i+1}</div><div class="lbav">${item.s.name[0]}</div><div class="lbinfo"><div class="lbname">${item.s.name} <span class="badge bgold" style="font-size:.54rem">${item.s.branch}</span></div><div class="lbmeta">Sales:${item.ss}% Disc:${item.ds} OT:${item.ot.toFixed(1)}h</div><div class="lbbw"><div class="lbbf" style="width:${item.total}%"></div></div></div><div class="lbright"><div class="lbpts" style="color:${col}">${item.total}<span style="font-size:.55rem;color:var(--muted)">pts</span></div><span class="badge bgold" style="font-size:.54rem">${LABS[i]||'⭐'}</span></div></div>`;}).join('')||'<p style="color:var(--muted);text-align:center;padding:16px">No data.</p>';
+  const range=getWeekRange(document.getElementById('lbDate')?.value||today());
+  const sc=calcScores(range);
+  const LABS=['Top 🥇','Rising 🌟','Steady ⭐','Effort 💪','Team 🎯'];
+  const el=document.getElementById('lbList');if(!el)return;
+  el.innerHTML=sc.map((item,i)=>{
+    const col=item.total>=80?'var(--green)':item.total>=55?'var(--yellow)':'var(--red)';
+    return`<div class="lbc${i===0?' first':''}"><div class="lbr ${i<3?'r'+(i+1):''}">#${i+1}</div><div class="lbav">${item.s.name[0]}</div>
+      <div class="lbinfo"><div class="lbname">${item.s.name} <span class="badge bgold" style="font-size:.54rem">${item.s.branch}</span></div>
+      <div class="lbmeta">Sales:${item.ss}% Disc:${item.ds} OT:${item.ot.toFixed(1)}h</div>
+      <div class="lbbw"><div class="lbbf" style="width:${item.total}%"></div></div></div>
+      <div class="lbright"><div class="lbpts" style="color:${col}">${item.total}<span style="font-size:.55rem;color:var(--muted)">pts</span></div>
+      <span class="badge bgold" style="font-size:.54rem">${LABS[i]||'⭐'}</span></div></div>`;
+  }).join('')||'<p style="color:var(--muted);text-align:center;padding:16px">No data.</p>';
 };
 
 function rLeaves(){
@@ -1099,18 +1184,23 @@ function rLeaves(){
   ${!arr(DATA.leaves).length?'<p style="color:var(--muted);text-align:center;padding:16px">No requests</p>':''}
   ${pend.map(l=>lvCard(l,true)).join('')}
   ${rest.length?'<div style="font-size:.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin:10px 0 6px">History</div>':''}
-  ${rest.map(l=>lvCard(l,false)).join('')}
-  </div>`;
+  ${rest.map(l=>lvCard(l,false)).join('')}</div>`;
 }
+
 function lvCard(l,showAct){
   const s=DATA.staff&&DATA.staff[l.staffId];
   const cls={pending:'bpend',approved:'bg',rejected:'br'};
-  return`<div class="lvc ${l.status}"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-  <div><b>${s?.name||'?'}</b> <span class="badge bgold">${s?.branch||''}</span></div>
-  <span class="badge ${cls[l.status]}">${l.status.toUpperCase()}</span></div>
-  <div style="font-size:.73rem;color:var(--muted)">${l.from} → ${l.to}</div>
-  <div style="font-size:.75rem;margin-top:3px">${l.reason}</div>
-  ${showAct?`<div style="display:flex;gap:6px;margin-top:7px"><button class="btn bsm bgrn" onclick="approveLeave('${l.id}','approved')">✓ Approve</button><button class="btn bsm bdng" onclick="approveLeave('${l.id}','rejected')">✕ Reject</button></div>`:''}</div>`;
+  return`<div class="lvc ${l.status}">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <div><b>${s?.name||'?'}</b> <span class="badge bgold">${s?.branch||''}</span></div>
+      <span class="badge ${cls[l.status]}">${l.status.toUpperCase()}</span>
+    </div>
+    <div style="font-size:.73rem;color:var(--muted)">${l.from} → ${l.to}</div>
+    <div style="font-size:.75rem;margin-top:3px">${l.reason}</div>
+    ${showAct?`<div style="display:flex;gap:6px;margin-top:7px">
+      <button class="btn bsm bgrn" onclick="approveLeave('${l.id}','approved')">✓ Approve</button>
+      <button class="btn bsm bdng" onclick="approveLeave('${l.id}','rejected')">✕ Reject</button>
+    </div>`:''}</div>`;
 }
 window.approveLeave=function(id,status){
   const l=arr(DATA.leaves).find(x=>x.id===id);if(!l)return;
@@ -1139,10 +1229,17 @@ function calcSal(s,month){
 
 function rMonthly(){
   const mon=thisMonth();
-  oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">📈 Monthly</div><div style="display:flex;gap:6px"><input type="month" id="mPick" value="${mon}" onchange="buildMonthly(this.value)" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:.73rem;outline:none"><button class="btn bsm bgrn" onclick="exportCSV()">⬇ Export</button></div></div>
-  <div class="tw"><table><thead><tr><th>Staff</th><th>Sales</th><th>Tgt</th><th>%</th><th>Inc</th><th>OT</th><th>Lvs</th><th>Disc</th><th>Half</th></tr></thead><tbody id="mBody"></tbody><tfoot id="mFoot"></tfoot></table></div>
-  <div id="perfBar"></div></div>`;buildMonthly(mon);
+  oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">📈 Monthly</div>
+    <div style="display:flex;gap:6px">
+      <input type="month" id="mPick" value="${mon}" onchange="buildMonthly(this.value)" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:.73rem;outline:none">
+      <button class="btn bsm bgrn" onclick="exportCSV()">⬇ Export</button>
+    </div></div>
+  <div class="tw"><table><thead><tr><th>Staff</th><th>Sales</th><th>Tgt</th><th>%</th><th>Inc</th><th>OT</th><th>Lvs</th><th>Disc</th><th>Half</th></tr></thead>
+  <tbody id="mBody"></tbody><tfoot id="mFoot"></tfoot></table></div>
+  <div id="perfBar"></div></div>`;
+  buildMonthly(mon);
 }
+
 window.buildMonthly=function(month){
   const fs=filtStaff(),tb=document.getElementById('mBody');if(!fs.length||!tb)return;
   let ts=0,tt=0;
@@ -1154,7 +1251,11 @@ window.buildMonthly=function(month){
     const lv=arr(DATA.leaves).filter(l=>l.staffId===s.id&&l.status==='approved'&&l.from.startsWith(month)).length;
     const disc=arr(DATA.disc).filter(x=>x.staffId===s.id&&x.date.startsWith(month)).length;
     const half=atts.filter(a=>a.halfDay).length;
-    return`<tr><td><b>${s.name}</b></td><td>₹${d.sales.toLocaleString('en-IN')}</td><td>₹${d.tgt.toLocaleString('en-IN')}</td><td><span style="color:${col};font-weight:800">${pct}%</span></td><td style="color:var(--green)">${d.inc>0?'₹'+d.inc.toLocaleString('en-IN'):'–'}</td><td>${d.ot>0?d.ot.toFixed(1)+'h':'–'}</td><td>${lv}</td><td>${disc}</td><td>${half>0?`<span class="badge bpink">${half}</span>`:'–'}</td></tr>`;
+    return`<tr><td><b>${s.name}</b></td><td>₹${d.sales.toLocaleString('en-IN')}</td><td>₹${d.tgt.toLocaleString('en-IN')}</td>
+      <td><span style="color:${col};font-weight:800">${pct}%</span></td>
+      <td style="color:var(--green)">${d.inc>0?'₹'+d.inc.toLocaleString('en-IN'):'–'}</td>
+      <td>${d.ot>0?d.ot.toFixed(1)+'h':'–'}</td><td>${lv}</td><td>${disc}</td>
+      <td>${half>0?`<span class="badge bpink">${half}</span>`:'–'}</td></tr>`;
   }).join('');
   const op=tt>0?Math.round((ts/tt)*100):0;
   document.getElementById('mFoot').innerHTML=`<tr style="background:var(--gold-pale)"><td><b>Total</b></td><td><b>₹${ts.toLocaleString('en-IN')}</b></td><td><b>₹${tt.toLocaleString('en-IN')}</b></td><td><b style="color:${op>=100?'var(--green)':op>=70?'var(--yellow)':'var(--red)'}">${op}%</b></td><td colspan="5"></td></tr>`;
@@ -1166,15 +1267,32 @@ function rSalary(){
   oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">💰 Salary</div><input type="month" id="sPick" value="${mon}" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:.73rem;outline:none"></div>
   <div class="ibox">Fixed + Incentive + OT − Late − Violations − Half Days − Extra Leaves</div>
   <div class="tw"><table><thead><tr><th>Staff</th><th>Fixed</th><th>+Inc</th><th>+OT</th><th>-Pen</th><th>-Half</th><th>-Lv</th><th>Final</th><th></th></tr></thead><tbody id="salBody"></tbody></table></div></div>`;
-  buildSalary(mon);document.getElementById('sPick').onchange=function(){buildSalary(this.value);};
+  buildSalary(mon);
+  document.getElementById('sPick').onchange=function(){buildSalary(this.value);};
 }
+
 window.buildSalary=function(month){
   const fs=filtStaff(),tb=document.getElementById('salBody');if(!fs.length||!tb)return;
-  tb.innerHTML=fs.map(s=>{const d=calcSal(s,month);return`<tr><td><b>${s.name}</b></td><td>₹${(s.salary||0).toLocaleString('en-IN')}</td><td style="color:var(--green)">${d.inc>0?'₹'+d.inc.toLocaleString('en-IN'):'–'}</td><td style="color:var(--blue)">${d.otInc>0?'₹'+d.otInc.toLocaleString('en-IN'):'–'}</td><td style="color:var(--red)">${d.pen>0?'-₹'+d.pen.toLocaleString('en-IN'):'–'}</td><td style="color:var(--pink)">${d.halfDed>0?'-₹'+d.halfDed.toLocaleString('en-IN'):'–'}</td><td style="color:var(--red)">${d.lvDed>0?'-₹'+d.lvDed.toLocaleString('en-IN'):'–'}</td><td><b style="color:var(--gold)">₹${d.final.toLocaleString('en-IN')}</b></td><td><button class="btn bsm bedt" onclick="showSal('${s.id}','${month}')">View</button></td></tr>`;}).join('');
+  tb.innerHTML=fs.map(s=>{
+    const d=calcSal(s,month);
+    return`<tr><td><b>${s.name}</b></td><td>₹${(s.salary||0).toLocaleString('en-IN')}</td>
+      <td style="color:var(--green)">${d.inc>0?'₹'+d.inc.toLocaleString('en-IN'):'–'}</td>
+      <td style="color:var(--blue)">${d.otInc>0?'₹'+d.otInc.toLocaleString('en-IN'):'–'}</td>
+      <td style="color:var(--red)">${d.pen>0?'-₹'+d.pen.toLocaleString('en-IN'):'–'}</td>
+      <td style="color:var(--pink)">${d.halfDed>0?'-₹'+d.halfDed.toLocaleString('en-IN'):'–'}</td>
+      <td style="color:var(--red)">${d.lvDed>0?'-₹'+d.lvDed.toLocaleString('en-IN'):'–'}</td>
+      <td><b style="color:var(--gold)">₹${d.final.toLocaleString('en-IN')}</b></td>
+      <td><button class="btn bsm bedt" onclick="showSal('${s.id}','${month}')">View</button></td></tr>`;
+  }).join('');
 };
+
 window.showSal=function(sid,month){
   const s=DATA.staff[sid],d=calcSal(s,month);
-  document.getElementById('salContent').innerHTML=`<div style="background:var(--gold-pale);border-radius:9px;padding:10px;margin-bottom:10px;text-align:center"><div style="font-size:.66rem;color:var(--muted)">${month}</div><div style="font-size:.88rem;font-weight:900;color:var(--gold)">${s.name} · ${s.branch}</div></div>
+  document.getElementById('salContent').innerHTML=`
+    <div style="background:var(--gold-pale);border-radius:9px;padding:10px;margin-bottom:10px;text-align:center">
+      <div style="font-size:.66rem;color:var(--muted)">${month}</div>
+      <div style="font-size:.88rem;font-weight:900;color:var(--gold)">${s.name} · ${s.branch}</div>
+    </div>
     <div class="sr"><span>Fixed Salary</span><b>₹${(s.salary||0).toLocaleString('en-IN')}</b></div>
     <div class="sr"><span>Sales</span><span>₹${d.sales.toLocaleString('en-IN')}</span></div>
     <div class="sr"><span>Target</span><span>₹${d.tgt.toLocaleString('en-IN')}</span></div>
@@ -1190,9 +1308,12 @@ window.showSal=function(sid,month){
 
 function rServices(){
   const mon=thisMonth();
-  oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">💅 Services</div><input type="month" id="svPick" value="${mon}" onchange="buildSvc(this.value)" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:.73rem;outline:none"></div><div id="svcData"></div></div>`;
+  oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">💅 Services</div>
+    <input type="month" id="svPick" value="${mon}" onchange="buildSvc(this.value)" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:.73rem;outline:none">
+  </div><div id="svcData"></div></div>`;
   buildSvc(mon);
 }
+
 window.buildSvc=function(month){
   const fids=filtStaff().map(s=>s.id);
   const logs=arr(DATA.logs).filter(l=>l.date.startsWith(month)&&(activeBranch==='ALL'||fids.includes(l.staffId)));
@@ -1200,25 +1321,46 @@ window.buildSvc=function(month){
   const svcs=Object.values(map).sort((a,b)=>b.count-a.count);
   const el=document.getElementById('svcData');if(!el)return;
   if(!svcs.length){el.innerHTML='<p style="color:var(--muted);text-align:center;padding:16px">No data</p>';return;}
-  el.innerHTML=`<div class="cards"><div class="scard"><div class="scl">Most Sold 🌟</div><div class="scv" style="font-size:.82rem">${svcs[0].name}</div><div class="scs">${svcs[0].count}×</div></div><div class="scard"><div class="scl">Least Sold</div><div class="scv" style="font-size:.82rem">${svcs[svcs.length-1].name}</div><div class="scs">${svcs[svcs.length-1].count}×</div></div></div>
-  <div class="tw"><table><thead><tr><th>Service</th><th>Count</th></tr></thead><tbody>${svcs.map(s=>`<tr><td>${s.name}</td><td><b>${s.count}</b></td></tr>`).join('')}</tbody></table></div>`;
+  el.innerHTML=`<div class="cards">
+    <div class="scard"><div class="scl">Most Sold 🌟</div><div class="scv" style="font-size:.82rem">${svcs[0].name}</div><div class="scs">${svcs[0].count}×</div></div>
+    <div class="scard"><div class="scl">Least Sold</div><div class="scv" style="font-size:.82rem">${svcs[svcs.length-1].name}</div><div class="scs">${svcs[svcs.length-1].count}×</div></div>
+  </div>
+  <div class="tw"><table><thead><tr><th>Service</th><th>Count</th></tr></thead>
+  <tbody>${svcs.map(s=>`<tr><td>${s.name}</td><td><b>${s.count}</b></td></tr>`).join('')}</tbody></table></div>`;
 };
 
 function rFeedback(){
   const fs=filtStaff();
   oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">⭐ Feedback</div><button class="delall" onclick="delAllFbk()">🗑 All</button></div>
   <div class="tw"><table><thead><tr><th>Staff</th><th>Avg</th><th>Last</th><th></th></tr></thead>
-  <tbody>${fs.map(s=>{const mon=thisMonth();const fbs=arr(DATA.feedback).filter(f=>f.staffId===s.id&&f.date.startsWith(mon));const avg=fbs.length?(fbs.reduce((a,f)=>a+f.stars,0)/fbs.length).toFixed(1):null;const last=arr(DATA.feedback).filter(f=>f.staffId===s.id).sort((a,b)=>b.date.localeCompare(a.date))[0];return`<tr><td><b>${s.name}</b> <span class="badge bgold">${s.branch}</span></td><td><span class="badge ${avg?avg>=4?'bg':avg>=2.5?'by':'br':'bgold'}">${avg?avg+' ★':'–'}</span></td><td>${last?starsH(last.stars):'–'}</td><td><button class="btn bsm bedt" onclick="openFbk('${s.id}')">Rate</button></td></tr>`;}).join('')}
-  </tbody></table></div></div>`;
+  <tbody>${fs.map(s=>{
+    const mon=thisMonth();
+    const fbs=arr(DATA.feedback).filter(f=>f.staffId===s.id&&f.date.startsWith(mon));
+    const avg=fbs.length?(fbs.reduce((a,f)=>a+f.stars,0)/fbs.length).toFixed(1):null;
+    const last=arr(DATA.feedback).filter(f=>f.staffId===s.id).sort((a,b)=>b.date.localeCompare(a.date))[0];
+    return`<tr><td><b>${s.name}</b> <span class="badge bgold">${s.branch}</span></td>
+      <td><span class="badge ${avg?avg>=4?'bg':avg>=2.5?'by':'br':'bgold'}">${avg?avg+' ★':'–'}</span></td>
+      <td>${last?starsH(last.stars):'–'}</td>
+      <td><button class="btn bsm bedt" onclick="openFbk('${s.id}')">Rate</button></td></tr>`;
+  }).join('')}</tbody></table></div></div>`;
 }
-window.openFbk=function(sid){fbkStaffId=sid;oStar=0;const s=DATA.staff[sid];document.getElementById('fbFor').textContent='For: '+s.name;document.getElementById('fbDate').value=today();document.getElementById('fbNote').value='';renderStars(0);document.getElementById('fbkModal').classList.add('open');};
+
+window.openFbk=function(sid){
+  fbkStaffId=sid;oStar=0;
+  const s=DATA.staff[sid];
+  document.getElementById('fbFor').textContent='For: '+s.name;
+  document.getElementById('fbDate').value=today();
+  document.getElementById('fbNote').value='';
+  renderStars(0);
+  document.getElementById('fbkModal').classList.add('open');
+};
 window.setStar=function(n){oStar=n;renderStars(n);};
 function renderStars(n){document.querySelectorAll('#starRow .star').forEach((s,i)=>{s.textContent=i<n?'★':'☆';s.style.color=i<n?'#C9A84C':'#ccc';});}
 window.saveFbk=function(){
-  if(!oStar){toast('Select rating');return;}
+  if(!oStar){toast('Select rating','r');return;}
   const id='fbk_'+uid();
   fbSave('feedback',id,{id,staffId:fbkStaffId,stars:oStar,date:document.getElementById('fbDate').value,note:document.getElementById('fbNote').value.trim()});
-  closeM('fbkModal');toast('⭐ Saved!');
+  closeM('fbkModal');toast('⭐ Saved!','g');
 };
 window.delAllFbk=function(){if(!confirm('Delete all feedback?'))return;fbClear('feedback');toast('All deleted','r');};
 
@@ -1228,13 +1370,29 @@ window.exportCSV=function(){
   const logs=arr(DATA.logs).filter(l=>l.date.startsWith(month)&&(activeBranch==='ALL'||fids.includes(l.staffId)));
   const rows=[['Date','Staff','Branch','Services','Price']];
   logs.forEach(l=>{const s=DATA.staff&&DATA.staff[l.staffId];rows.push([l.date,s?.name||'',s?.branch||'',(l.services||[]).join('|'),l.price]);});
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(rows.map(r=>r.join(',')).join('\n'));a.download=`MissMams_${month}.csv`;a.click();toast('📥 Exported!');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(rows.map(r=>r.join(',')).join('\n'));
+  a.download=`MissMams_${month}.csv`;a.click();toast('📥 Exported!','g');
 };
 
-function popSel(id){const el=document.getElementById(id);if(!el)return;el.innerHTML=arrStaff().map(s=>`<option value="${s.id}">${s.name} (${s.branch})</option>`).join('');}
+function popSel(id){
+  const el=document.getElementById(id);if(!el)return;
+  el.innerHTML=arrStaff().map(s=>`<option value="${s.id}">${s.name} (${s.branch})</option>`).join('');
+}
+
 window.closeM=function(id){document.getElementById(id)?.classList.remove('open');};
-document.querySelectorAll('.mbg').forEach(el=>el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');}));
-function openBig(title,html){document.getElementById('bigTitle').textContent=title;document.getElementById('bigContent').innerHTML=html;document.getElementById('bigModal').classList.add('open');}
+
+// BUG FIX: staffModal does NOT close on backdrop click to avoid accidental dismissal
+document.querySelectorAll('.mbg').forEach(el=>{
+  if(el.id==='staffModal') return; // skip staffModal — close only via buttons
+  el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+});
+
+function openBig(title,html){
+  document.getElementById('bigTitle').textContent=title;
+  document.getElementById('bigContent').innerHTML=html;
+  document.getElementById('bigModal').classList.add('open');
+}
 </script>
 </body>
 </html>
