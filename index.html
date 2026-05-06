@@ -583,17 +583,25 @@ async function fbSet(path, data) {
 
 async function fbPush(path, data) {
   if (!FIREBASE_URL) { toast('No Firebase URL','r'); return null; }
+  const url = `${FIREBASE_URL}/${path}.json`;
+  console.log('fbPush URL:', url, 'data:', data);
   try {
-    const r = await fetch(`${FIREBASE_URL}/${path}.json`, {
+    const r = await fetch(url, {
       method: 'POST',
       body: JSON.stringify(data),
       headers: {'Content-Type':'application/json'}
     });
-    if (!r.ok) { toast('Firebase error: '+r.status,'r'); return null; }
+    const text = await r.text();
+    console.log('fbPush response:', r.status, text);
+    if (!r.ok) { toast('Firebase '+r.status+': '+text,'r'); return null; }
     setSyncStatus(true);
-    const res = await r.json();
+    const res = JSON.parse(text);
     return res.name;
-  } catch(e) { setSyncStatus(false); toast('Network error','r'); return null; }
+  } catch(e) {
+    console.error('fbPush error:', e);
+    toast('Error: '+e.message,'r');
+    return null;
+  }
 }
 
 async function fbDelete(path) {
