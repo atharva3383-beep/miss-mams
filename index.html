@@ -509,6 +509,17 @@ tr:hover td{background:var(--gold-pale)}
   <div class="macts"><button class="btn bsm bpri" onclick="closeM('bigModal')">Close</button></div>
 </div></div>
 
+<div class="mbg" id="attEditModal"><div class="msh">
+  <div class="drag"></div><div class="mtitle">✏️ Edit Attendance</div>
+  <div id="attEditWho" style="font-size:.8rem;font-weight:700;color:var(--dark);margin-bottom:12px"></div>
+  <div class="fg2">
+    <div class="frow"><label class="flbl">Time In</label><input class="finp" type="time" id="aeIn"></div>
+    <div class="frow"><label class="flbl">Time Out</label><input class="finp" type="time" id="aeOut"></div>
+  </div>
+  <div id="aeCalc" style="background:var(--gold-pale);border:1px solid var(--gold-border);border-radius:8px;padding:9px 12px;font-size:.74rem;color:var(--gold);margin-bottom:10px;display:none"></div>
+  <div class="macts"><button class="btn bsm" onclick="closeM('attEditModal')">Cancel</button><button class="btn bsm bpri" onclick="saveAttEdit()">Save ✓</button></div>
+</div></div>
+
 <div class="mbg" id="salModal"><div class="msh">
   <div class="drag"></div><div class="mtitle">💰 Salary Breakdown</div>
   <div id="salContent"></div>
@@ -1581,9 +1592,9 @@ function rAttend(){
   const atts=arr(DATA.attend).filter(a=>activeBranch==='ALL'||fids.includes(a.staffId)).sort((a,b)=>b.date.localeCompare(a.date));
   const discs=arr(DATA.disc).filter(d=>activeBranch==='ALL'||fids.includes(d.staffId)).sort((a,b)=>b.date.localeCompare(a.date));
   oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">🕐 Attendance</div><button class="delall" onclick="delAllAtt()">🗑 All</button></div>
-  <div class="tw"><table><thead><tr><th>Date</th><th>Staff</th><th>In</th><th>Out</th><th>Late</th><th>OT</th><th>Half</th></tr></thead>
-  <tbody>${!atts.length?'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:16px">No records</td></tr>':
-  atts.map(a=>{const s=DATA.staff&&DATA.staff[a.staffId];return`<tr><td>${a.date}</td><td><b>${s?.name||'?'}</b></td><td>${a.in||'–'}</td><td>${a.out||'–'}</td><td>${a.lateMins>0?`<span class="badge by">${a.lateMins}m</span>`:'–'}</td><td>${(a.otHours||0)>0?a.otHours.toFixed(1)+'h':'–'}</td><td>${a.halfDay?'<span class="badge bpink">½</span>':'–'}</td></tr>`;}).join('')}
+  <div class="tw"><table><thead><tr><th>Date</th><th>Staff</th><th>In</th><th>Out</th><th>Late</th><th>OT</th><th>Half</th><th>Edit</th></tr></thead>
+  <tbody>${!atts.length?'<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px">No records</td></tr>':
+  atts.map(a=>{const s=DATA.staff&&DATA.staff[a.staffId];return`<tr><td>${a.date}</td><td><b>${s?.name||'?'}</b></td><td>${a.in||'–'}</td><td>${a.out||'–'}</td><td>${a.lateMins>0?`<span class="badge by">${a.lateMins}m</span>`:'–'}</td><td>${(a.otHours||0)>0?a.otHours.toFixed(1)+'h':'–'}</td><td>${a.halfDay?'<span class="badge bpink">½</span>':'–'}</td><td><button class="btn bsm bedt" onclick="openAttEdit('${a.id}')">✏️</button></td></tr>`;}).join('')}
   </tbody></table></div></div>
   <div class="sec"><div class="sechdr"><div class="sectitle">⚡ Discipline</div><button class="btn bsm bpri" onclick="openDiscModal()">＋ Add</button><button class="delall" onclick="delAllDisc()">🗑 All</button></div>
   <div class="tw"><table><thead><tr><th>Date</th><th>Staff</th><th>Type</th><th>Note</th><th>Penalty</th><th>Del</th></tr></thead>
@@ -1601,6 +1612,66 @@ window.saveDisc=function(){
 };
 window.delDisc=function(id){if(!confirm('Delete?'))return;fbDel('disc',id);toast('Deleted');};
 window.delAllAtt=function(){if(!confirm('Delete all attendance?'))return;fbClear('attend');toast('All deleted','r');};
+
+// ── Owner attendance edit ──
+let aeId=null;
+window.openAttEdit=function(id){
+  const a=DATA.attend&&DATA.attend[id];if(!a)return;
+  aeId=id;
+  const s=DATA.staff&&DATA.staff[a.staffId];
+  document.getElementById('attEditWho').textContent=(s?.name||'?')+' · '+a.date;
+  document.getElementById('aeIn').value=a.in||'';
+  document.getElementById('aeOut').value=a.out||'';
+  updateAttCalc();
+  document.getElementById('attEditModal').classList.add('open');
+};
+
+// Live recalculation preview
+['aeIn','aeOut'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', updateAttCalc);
+});
+
+function updateAttCalc(){
+  const a=DATA.attend&&DATA.attend[aeId];if(!a)return;
+  const s=DATA.staff&&DATA.staff[a?.staffId];
+  const tin=document.getElementById('aeIn').value;
+  const tout=document.getElementById('aeOut').value;
+  const box=document.getElementById('aeCalc');
+  if(!tin){box.style.display='none';return;}
+  const base=s?.baseIn||'10:00';
+  const baseOut=s?.baseOut||'20:30';
+  const late=lateMins(tin,base);
+  const ot=tout?calcOT(tout,baseOut):0;
+  const half=tin&&tout?isHalfDay(tin,tout):false;
+  box.style.display='block';
+  box.innerHTML=`Late: <b>${late>0?late+'m':'None'}</b> &nbsp;|&nbsp; OT: <b>${ot>0?ot.toFixed(1)+'h':'None'}</b> &nbsp;|&nbsp; Half Day: <b>${half?'Yes':'No'}</b>${late>30?' &nbsp;<span style="color:var(--red)">⚠️ ₹100 deduction</span>':''}`;
+}
+
+window.saveAttEdit=function(){
+  const a=DATA.attend&&DATA.attend[aeId];if(!a)return;
+  const s=DATA.staff&&DATA.staff[a.staffId];
+  const tin=document.getElementById('aeIn').value;
+  const tout=document.getElementById('aeOut').value;
+  if(!tin){toast('Time In is required','r');return;}
+  const base=s?.baseIn||'10:00';
+  const baseOut=s?.baseOut||'20:30';
+  const late=lateMins(tin,base);
+  const ot=tout?calcOT(tout,baseOut):0;
+  const half=tin&&tout?isHalfDay(tin,tout):false;
+  const updated={...a,in:tin,out:tout||null,lateMins:late,otHours:ot,halfDay:half};
+  fbSave('attend',aeId,updated).then(()=>{
+    // Also update/remove auto-generated late discipline entry for this day
+    const existingDisc=arr(DATA.disc).find(d=>d.staffId===a.staffId&&d.date===a.date&&d.note&&d.note.startsWith('Auto:'));
+    if(late>30){
+      const did=existingDisc?.id||('disc_'+uid());
+      fbSave('disc',did,{id:did,staffId:a.staffId,date:a.date,type:'late',note:`Auto: ${late}min late`});
+    } else if(existingDisc){
+      fbDel('disc',existingDisc.id);
+    }
+    toast('✅ Attendance updated','g');
+    closeM('attEditModal');
+  });
+};;
 window.delAllDisc=function(){if(!confirm('Delete all discipline?'))return;fbClear('disc');toast('All deleted','r');};
 
 // ══════════════════════════════════════════════
