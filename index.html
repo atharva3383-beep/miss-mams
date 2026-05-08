@@ -579,7 +579,7 @@ let chartInstances = {}; // Track Chart.js instances for cleanup
 // PRIORITY 1: Owner PIN — read from Firebase settings
 // ══════════════════════════════════════════════
 function getOwnerPin(){
-  return (DATA.settings && DATA.settings.ownerPin) || DEFAULT_OWNER_PIN;
+  return (DATA.settings && DATA.settings.config && DATA.settings.config.ownerPin) || DEFAULT_OWNER_PIN;
 }
 
 // ══════════════════════════════════════════════
