@@ -6,6 +6,7 @@
 <title>Miss & Mam's</title>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{
   --gold:#8B6914;--gold-l:#C9A84C;--gold-pale:#FDF8EE;--gold-border:#E8D5A3;
@@ -37,8 +38,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg)}
 .mtab.active{background:#fff;color:var(--gold);box-shadow:0 2px 8px rgba(0,0,0,.1)}
 .step-lbl{font-size:.65rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;text-align:center}
 .name-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
-.nbtn{padding:12px 8px;border:2px solid var(--border);border-radius:12px;background:var(--bg);cursor:pointer;touch-action:manipulation;text-align:center}
+.nbtn{padding:12px 8px;border:2px solid var(--border);border-radius:12px;background:var(--bg);cursor:pointer;touch-action:manipulation;text-align:center;transition:transform .12s,border-color .12s}
 .nbtn:active{transform:scale(.93)}
+.nbtn:hover{border-color:var(--gold-border)}
 .nbtn .av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-l));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.8rem;margin:0 auto 5px}
 .nbtn .nn{font-size:.8rem;font-weight:800;color:var(--dark)}
 .nbtn .nr{font-size:.6rem;color:var(--muted);margin-top:1px}
@@ -63,7 +65,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg)}
 .adot{width:7px;height:7px;border-radius:50%;background:var(--border)}
 .adot.used{background:var(--red)}
 .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.kp{padding:15px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);font-size:1.2rem;font-weight:800;cursor:pointer;touch-action:manipulation;color:var(--dark);text-align:center;user-select:none}
+.kp{padding:15px;border:1.5px solid var(--border);border-radius:12px;background:var(--bg);font-size:1.2rem;font-weight:800;cursor:pointer;touch-action:manipulation;color:var(--dark);text-align:center;user-select:none;transition:all .1s}
 .kp:active{background:var(--gold-pale);border-color:var(--gold);transform:scale(.9)}
 .kp.del{color:var(--red)}.kp.z{grid-column:2}
 .kp.off{opacity:.3;pointer-events:none}
@@ -85,16 +87,18 @@ html,body{height:100%;overflow:hidden;background:var(--bg)}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* OWNER NAV */
-#oNav{background:#fff;border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 6px;flex-shrink:0;scrollbar-width:none}
+#oNav{background:#fff;border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 6px;flex-shrink:0;scrollbar-width:none;user-select:none;-webkit-user-select:none}
 #oNav::-webkit-scrollbar{display:none}
-#oNav button{padding:10px 11px;border:none;background:transparent;color:var(--muted);font-size:.7rem;font-weight:600;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap}
+#oNav button{padding:10px 11px;border:none;background:transparent;color:var(--muted);font-size:.7rem;font-weight:600;cursor:pointer;border-bottom:2.5px solid transparent;white-space:nowrap;transition:color .15s;touch-action:none}
 #oNav button.active{color:var(--gold);border-bottom-color:var(--gold)}
+#oNav button.dragging{opacity:.5;background:var(--gold-pale);border-radius:6px}
 #oContent{flex:1;overflow-y:auto;padding:12px;overscroll-behavior:contain}
 
 /* STAFF BODY */
 #staffBody{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:8px 10px;gap:7px}
 .top3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex-shrink:0}
-.sc{background:#fff;border-radius:10px;padding:8px 5px;border:1px solid var(--border);text-align:center}
+.sc{background:#fff;border-radius:10px;padding:8px 5px;border:1px solid var(--border);text-align:center;transition:transform .15s,box-shadow .15s}
+.sc:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(139,105,20,.1)}
 .sc .si{font-size:.9rem}.sc .sl{font-size:.52rem;color:var(--muted);font-weight:700;text-transform:uppercase}
 .sc .sv{font-size:.95rem;font-weight:900;color:var(--gold);line-height:1.1}
 .midrow{display:flex;gap:7px;flex-shrink:0}
@@ -108,23 +112,44 @@ html,body{height:100%;overflow:hidden;background:var(--bg)}
 .ftk{transition:transform .4s ease;position:absolute;width:100%}
 .fi{height:26px;display:flex;align-items:center;gap:5px;padding:0 8px;font-size:.66rem;color:var(--dark)}
 .fdot{width:5px;height:5px;border-radius:50%;background:var(--gold-l);flex-shrink:0}
+
+/* ── PRIORITY 4: Target Progress Bar ── */
+.target-progress-wrap{flex-shrink:0;background:#fff;border-radius:12px;border:1px solid var(--border);padding:10px 12px;position:relative;overflow:hidden}
+.tpw-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.tpw-label{font-size:.65rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.tpw-pct{font-size:.9rem;font-weight:900;color:var(--gold)}
+.tpw-track{height:10px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.tpw-fill{height:100%;border-radius:99px;transition:width .8s cubic-bezier(.4,0,.2,1);position:relative}
+.tpw-fill::after{content:'';position:absolute;top:0;right:0;bottom:0;width:20px;background:rgba(255,255,255,.3);border-radius:99px;animation:shimmer 1.6s infinite}
+@keyframes shimmer{0%{opacity:0}50%{opacity:1}100%{opacity:0}}
+.tpw-fill.green{background:linear-gradient(90deg,#2D7D46,#38A169);box-shadow:0 0 8px rgba(45,125,70,.4)}
+.tpw-fill.yellow{background:linear-gradient(90deg,#B8860B,#D4A017);box-shadow:0 0 8px rgba(184,134,11,.3)}
+.tpw-fill.red{background:linear-gradient(90deg,#C0392B,#E74C3C);box-shadow:0 0 8px rgba(192,57,43,.3)}
+.tpw-meta{display:flex;justify-content:space-between;align-items:center}
+.tpw-motto{font-size:.68rem;font-weight:700}
+.tpw-motto.green{color:var(--green)}.tpw-motto.yellow{color:var(--yellow)}.tpw-motto.red{color:var(--red)}
+.tpw-nums{font-size:.6rem;color:var(--muted)}
+
 .elist-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
 .ehdr{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;margin-bottom:5px}
 .elbl{font-size:.7rem;font-weight:800;color:var(--dark)}
 .etotal{font-size:.7rem;font-weight:800;color:var(--gold)}
 .elist{flex:1;overflow-y:auto;overscroll-behavior:contain}
-.erow{display:flex;align-items:center;background:#fff;border-radius:9px;padding:7px 9px;margin-bottom:4px;border:1px solid var(--border);gap:5px}
+.erow{display:flex;align-items:center;background:#fff;border-radius:9px;padding:7px 9px;margin-bottom:4px;border:1px solid var(--border);gap:5px;transition:transform .1s}
+.erow:active{transform:scale(.98)}
 .esvc{flex:1;font-size:.74rem;font-weight:700;color:var(--dark)}
 .eprice{font-size:.82rem;font-weight:900;color:var(--gold)}
 .eedit{background:none;border:none;color:var(--blue);font-size:.68rem;cursor:pointer;padding:2px 6px;font-weight:700}
 .edel{background:none;border:none;color:var(--red);font-size:.85rem;cursor:pointer;padding:2px 6px}
 .empty{text-align:center;padding:14px;color:var(--muted);font-size:.74rem}
-.addbtn{width:100%;padding:12px;background:linear-gradient(135deg,var(--gold),var(--gold-l));color:#fff;border:none;border-radius:12px;font-size:.88rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0}
+.addbtn{width:100%;padding:12px;background:linear-gradient(135deg,var(--gold),var(--gold-l));color:#fff;border:none;border-radius:12px;font-size:.88rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;transition:transform .12s,box-shadow .12s}
 .addbtn:active{transform:scale(.97)}
-.punchbtn{width:100%;padding:10px;background:linear-gradient(135deg,#1A1209,#3D2A0A);color:#fff;border:none;border-radius:12px;font-size:.82rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0}
+.addbtn:hover{box-shadow:0 4px 16px rgba(139,105,20,.3)}
+.punchbtn{width:100%;padding:10px;background:linear-gradient(135deg,#1A1209,#3D2A0A);color:#fff;border:none;border-radius:12px;font-size:.82rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;transition:transform .12s}
+.punchbtn:active{transform:scale(.97)}
 .att-status-bar{border-radius:9px;padding:6px 10px;font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--gold-pale);border:1px solid var(--gold-border);color:var(--gold)}
 .sbnav{display:flex;background:#fff;border-top:1px solid var(--border);flex-shrink:0}
-.sbn{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 4px;border:none;background:transparent;cursor:pointer;color:var(--muted);font-size:.58rem;font-weight:600}
+.sbn{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 4px;border:none;background:transparent;cursor:pointer;color:var(--muted);font-size:.58rem;font-weight:600;transition:color .15s}
 .sbn.active{color:var(--gold)}
 .sbni{font-size:1rem;line-height:1}
 
@@ -137,24 +162,25 @@ html,body{height:100%;overflow:hidden;background:var(--bg)}
 .mtitle{font-size:.92rem;font-weight:800;color:var(--gold);margin-bottom:14px}
 .frow{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
 .flbl{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
-.finp{padding:12px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:.95rem;outline:none;background:var(--bg);width:100%}
+.finp{padding:12px 13px;border:1.5px solid var(--border);border-radius:9px;font-size:.95rem;outline:none;background:var(--bg);width:100%;transition:border-color .15s}
 .finp:focus{border-color:var(--gold);background:#fff}
 .fg2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .macts{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
-.btn{padding:10px 16px;border-radius:9px;border:none;cursor:pointer;font-size:.8rem;font-weight:700}
+.btn{padding:10px 16px;border-radius:9px;border:none;cursor:pointer;font-size:.8rem;font-weight:700;transition:transform .1s,box-shadow .1s}
 .btn:active{transform:scale(.95)}
+.btn:hover{box-shadow:0 2px 8px rgba(0,0,0,.12)}
 .bsm{padding:7px 13px;font-size:.74rem;border-radius:8px}
 .bpri{background:linear-gradient(135deg,var(--gold),var(--gold-l));color:#fff}
 .bdng{background:var(--red-bg);color:var(--red);border:1px solid #fca5a5}
 .bedt{background:var(--gold-pale);color:var(--gold)}
 .bgrn{background:var(--green-bg);color:var(--green)}
 .sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(82px,1fr));gap:6px;margin-bottom:10px}
-.sqb{padding:8px 5px;border:2px solid var(--border);border-radius:10px;background:var(--bg);font-size:.68rem;font-weight:700;cursor:pointer;text-align:center}
+.sqb{padding:8px 5px;border:2px solid var(--border);border-radius:10px;background:var(--bg);font-size:.68rem;font-weight:700;cursor:pointer;text-align:center;transition:all .1s}
 .sqb:active{transform:scale(.9)}
 .sqb.on{border-color:var(--gold);background:var(--gold-pale);color:var(--gold)}
 .prow{display:flex;align-items:center;gap:8px}
 .ppfx{font-size:1rem;font-weight:800;color:var(--gold)}
-.pinp{flex:1;padding:12px;border:2px solid var(--gold-border);border-radius:9px;font-size:1.3rem;font-weight:800;outline:none;text-align:right;background:#fff;color:var(--dark)}
+.pinp{flex:1;padding:12px;border:2px solid var(--gold-border);border-radius:9px;font-size:1.3rem;font-weight:800;outline:none;text-align:right;background:#fff;color:var(--dark);transition:border-color .15s}
 .pinp:focus{border-color:var(--gold)}
 .badge{padding:2px 8px;border-radius:99px;font-size:.63rem;font-weight:700;display:inline-block}
 .bg{background:var(--green-bg);color:var(--green)}.by{background:var(--yellow-bg);color:var(--yellow)}
@@ -164,7 +190,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg)}
 
 /* OWNER */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-bottom:12px}
-.scard{background:#fff;border-radius:12px;padding:12px 10px;box-shadow:0 2px 12px rgba(139,105,20,.08);border:1px solid var(--border);position:relative;overflow:hidden}
+.scard{background:#fff;border-radius:12px;padding:12px 10px;box-shadow:0 2px 12px rgba(139,105,20,.08);border:1px solid var(--border);position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}
+.scard:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(139,105,20,.14)}
 .scard::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-l))}
 .sci{font-size:1.1rem;margin-bottom:4px}.scl{font-size:.6rem;color:var(--muted);font-weight:600;text-transform:uppercase}
 .scv{font-size:1.2rem;font-weight:800;color:var(--gold);margin-top:2px}.scs{font-size:.62rem;color:var(--muted);margin-top:1px}
@@ -203,10 +230,50 @@ tr:hover td{background:var(--gold-pale)}
 .delall{background:var(--red-bg);color:var(--red);border:1px solid #fca5a5;padding:4px 10px;border-radius:6px;font-size:.68rem;font-weight:700;cursor:pointer}
 .late-warn{background:var(--red-bg);border:1.5px solid #E88;border-radius:8px;padding:7px 10px;font-size:.74rem;font-weight:700;color:var(--red);margin-bottom:8px}
 
+/* ── PRIORITY 5: Insight Cards ── */
+.insight-card{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;margin-bottom:7px;border:1px solid;transition:transform .15s}
+.insight-card:hover{transform:translateX(2px)}
+.ic-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+.ic-body{flex:1}
+.ic-title{font-size:.74rem;font-weight:800;margin-bottom:2px}
+.ic-sub{font-size:.64rem;opacity:.85}
+.ic-warn{background:var(--yellow-bg);border-color:#F0C040;color:var(--yellow)}
+.ic-danger{background:var(--red-bg);border-color:#E88;color:var(--red)}
+.ic-good{background:var(--green-bg);border-color:#6EE7A0;color:var(--green)}
+.ic-info{background:var(--blue-bg);border-color:#93C5FD;color:var(--blue)}
+
+/* ── Chart containers ── */
+.chart-wrap{position:relative;padding:10px 0;margin-top:6px}
+.chart-wrap canvas{border-radius:8px}
+.chart-skeleton{height:140px;background:linear-gradient(90deg,var(--bg) 25%,var(--border) 50%,var(--bg) 75%);background-size:200% 100%;animation:skel 1.2s infinite;border-radius:8px}
+@keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── PRIORITY 8: Settings ── */
+.settings-group{background:#fff;border-radius:12px;border:1px solid var(--border);overflow:hidden;margin-bottom:12px}
+.settings-group-title{padding:10px 14px;font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);background:var(--bg);border-bottom:1px solid var(--border)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer}
+.settings-row:last-child{border-bottom:none}
+.settings-row:hover{background:var(--gold-pale)}
+.settings-row:active{background:var(--gold-pale)}
+.sr-left{display:flex;align-items:center;gap:10px}
+.sr-icon{font-size:1rem;width:28px;height:28px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
+.sr-info{display:flex;flex-direction:column;gap:1px}
+.sr-name{font-size:.78rem;font-weight:700;color:var(--dark)}
+.sr-desc{font-size:.62rem;color:var(--muted)}
+.sr-arrow{color:var(--muted);font-size:.8rem}
+
+/* ── PIN change inline ── */
+.pin-change-box{background:var(--gold-pale);border:1.5px solid var(--gold-border);border-radius:12px;padding:14px;margin-bottom:10px}
+.pcb-title{font-size:.78rem;font-weight:800;color:var(--gold);margin-bottom:10px}
+.pcb-notice{font-size:.64rem;color:var(--muted);margin-top:8px;padding:6px 8px;background:#fff;border-radius:6px;border:1px solid var(--border)}
+
 /* TOAST */
 .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--gold-l));color:#fff;padding:9px 18px;border-radius:10px;font-size:.78rem;font-weight:700;z-index:9999;white-space:nowrap;max-width:92vw;text-align:center;animation:su .2s ease;box-shadow:0 4px 14px rgba(139,105,20,.4)}
 .tr{background:linear-gradient(135deg,#C0392B,#E74C3C)!important}
 .tg{background:linear-gradient(135deg,#2D7D46,#38A169)!important}
+
+/* Animated counter */
+.count-anim{display:inline-block;transition:all .3s}
 </style>
 </head>
 <body>
@@ -283,6 +350,18 @@ tr:hover td{background:var(--gold-pale)}
       <div class="sc"><div class="si">💰</div><div class="sl">Sales</div><div class="sv" id="sSales">₹0</div></div>
       <div class="sc"><div class="si">📉</div><div class="sl">Left</div><div class="sv" id="sLeft" style="color:var(--red)">–</div></div>
     </div>
+    <!-- PRIORITY 4: Target Progress Bar -->
+    <div class="target-progress-wrap" id="targetProgressWrap" style="display:none">
+      <div class="tpw-header">
+        <span class="tpw-label">Daily Target Progress</span>
+        <span class="tpw-pct" id="tpwPct">0%</span>
+      </div>
+      <div class="tpw-track"><div class="tpw-fill" id="tpwFill" style="width:0%"></div></div>
+      <div class="tpw-meta">
+        <span class="tpw-motto" id="tpwMotto"></span>
+        <span class="tpw-nums" id="tpwNums"></span>
+      </div>
+    </div>
     <div class="midrow">
       <div class="inccard">
         <div class="icl">🔥 Incentive</div>
@@ -325,18 +404,7 @@ tr:hover td{background:var(--gold-pale)}
     <button class="hexit" onclick="logout()">Exit</button>
   </div>
   <div id="oNav">
-    <button onclick="oTab('overview',this)" class="active">📊 Overview</button>
-    <button onclick="oTab('alerts',this)">🔔 Alerts</button>
-    <button onclick="oTab('staff',this)">👥 Staff</button>
-    <button onclick="oTab('logs',this)">📋 Logs</button>
-    <button onclick="oTab('attend',this)">🕐 Attend.</button>
-    <button onclick="oTab('targets',this)">🎯 Targets</button>
-    <button onclick="oTab('rank',this)">🏆 Rank</button>
-    <button onclick="oTab('leaves',this)">🌴 Leaves</button>
-    <button onclick="oTab('monthly',this)">📈 Monthly</button>
-    <button onclick="oTab('salary',this)">💰 Salary</button>
-    <button onclick="oTab('services',this)">💅 Services</button>
-    <button onclick="oTab('feedback',this)">⭐ Feedback</button>
+    <!-- tabs rendered dynamically via initTabs() -->
   </div>
   <div id="oContent"></div>
 </div>
@@ -385,7 +453,6 @@ tr:hover td{background:var(--gold-pale)}
   <div class="macts"><button class="btn bsm" onclick="closeM('timeOutModal')">Cancel</button><button class="btn bsm bpri" onclick="confirmTimeOut()">Confirm ✓</button></div>
 </div></div>
 
-<!-- BUG FIX: staffModal no longer closes on backdrop click (prevents accidental close) -->
 <div class="mbg" id="staffModal" style="z-index:300"><div class="msh" style="max-height:92vh;overflow-y:auto">
   <div class="drag"></div><div class="mtitle">👤 <span id="staffMTitle">Add Staff</span></div>
   <div class="fg2">
@@ -449,7 +516,9 @@ tr:hover td{background:var(--gold-pale)}
 </div></div>
 
 <script>
-// ══ FIREBASE INIT ══
+// ══════════════════════════════════════════════
+// FIREBASE INIT
+// ══════════════════════════════════════════════
 const firebaseConfig = {
   apiKey: "AIzaSyDummyKeyForRTDB",
   databaseURL: "https://mm-dashboard-c5b40-default-rtdb.firebaseio.com",
@@ -458,23 +527,162 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// ══ CONSTANTS ══
-const OWNER_PIN = '0000';
+// ══════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════
+const DEFAULT_OWNER_PIN = '0000';
 const LEAVE_LIMIT = 4;
 const SVCS = ['Cleanup','Face Wax','Facial','Hair Colour','Hair Spa','Haircut','Hairwash','Hand Wax','Threadwork','Upperlip'];
 
-// ══ LOCAL STATE ══
-let DATA = { staff:{}, logs:{}, attend:{}, targets:{}, leaves:{}, disc:{}, feedback:{} };
+// Default tab order
+const DEFAULT_TABS = [
+  {id:'overview',label:'📊 Overview'},
+  {id:'alerts',label:'🔔 Alerts'},
+  {id:'staff',label:'👥 Staff'},
+  {id:'logs',label:'📋 Logs'},
+  {id:'attend',label:'🕐 Attend.'},
+  {id:'targets',label:'🎯 Targets'},
+  {id:'rank',label:'🏆 Rank'},
+  {id:'leaves',label:'🌴 Leaves'},
+  {id:'monthly',label:'📈 Monthly'},
+  {id:'salary',label:'💰 Salary'},
+  {id:'services',label:'💅 Services'},
+  {id:'feedback',label:'⭐ Feedback'},
+  {id:'settings',label:'⚙️ Settings'}
+];
+
+// ══════════════════════════════════════════════
+// LOCAL STATE
+// ══════════════════════════════════════════════
+let DATA = { staff:{}, logs:{}, attend:{}, targets:{}, leaves:{}, disc:{}, feedback:{}, settings:{} };
 let session = {role:null, staffId:null};
 let loginMode='staff', pinTarget=null, pinBuf='', wrongAttempts=0, locked=false, lockTimer=null;
 let editEntryId=null, selSvcs=[], editSvcs=[], fbkStaffId=null, oStar=0;
 let activeBranch='ALL', curOTab='overview';
 let feedIdx=0, feedTmr=null, editSid=null;
-
-// ══ FLAG: suppress Firebase callbacks from triggering login UI while owner is logged in ══
 let appReady = false;
+let tabOrder = [];
+let chartInstances = {}; // Track Chart.js instances for cleanup
 
-// ══ FIREBASE HELPERS ══
+// ══════════════════════════════════════════════
+// PRIORITY 1: Owner PIN — read from Firebase settings
+// ══════════════════════════════════════════════
+function getOwnerPin(){
+  return (DATA.settings && DATA.settings.ownerPin) || DEFAULT_OWNER_PIN;
+}
+
+// ══════════════════════════════════════════════
+// PRIORITY 2: Tab Order Management
+// ══════════════════════════════════════════════
+function loadTabOrder(){
+  try{
+    const saved = localStorage.getItem('mm_tab_order');
+    if(saved){
+      const ids = JSON.parse(saved);
+      // Merge saved order with defaults (handles new tabs added later)
+      const ordered = ids.map(id=>DEFAULT_TABS.find(t=>t.id===id)).filter(Boolean);
+      const missing = DEFAULT_TABS.filter(t=>!ids.includes(t.id));
+      tabOrder = [...ordered, ...missing];
+    } else {
+      tabOrder = [...DEFAULT_TABS];
+    }
+  } catch(e){ tabOrder = [...DEFAULT_TABS]; }
+}
+
+function saveTabOrder(){
+  localStorage.setItem('mm_tab_order', JSON.stringify(tabOrder.map(t=>t.id)));
+}
+
+function resetTabOrder(){
+  tabOrder = [...DEFAULT_TABS];
+  saveTabOrder();
+  initTabs();
+  toast('✅ Tab order reset','g');
+}
+
+function initTabs(){
+  const nav = document.getElementById('oNav');
+  nav.innerHTML = '';
+  tabOrder.forEach(tab=>{
+    const btn = document.createElement('button');
+    btn.dataset.tab = tab.id;
+    btn.textContent = tab.label;
+    btn.onclick = function(){ oTab(tab.id, this); };
+    if(tab.id === curOTab) btn.classList.add('active');
+    nav.appendChild(btn);
+  });
+  initTabDrag();
+}
+
+// ── Drag-to-reorder tabs (mobile touch + mouse) ──
+function initTabDrag(){
+  const nav = document.getElementById('oNav');
+  let dragEl=null, startX=0, startScrollLeft=0, isDragging=false, longPressTimer=null;
+  let dragGhost=null, dragStartIdx=-1;
+
+  nav.querySelectorAll('button').forEach((btn,idx)=>{
+    // Long press to initiate drag
+    const startDrag = (clientX)=>{
+      longPressTimer = setTimeout(()=>{
+        isDragging = true;
+        dragEl = btn;
+        dragStartIdx = [...nav.querySelectorAll('button')].indexOf(btn);
+        btn.classList.add('dragging');
+        navigator.vibrate && navigator.vibrate(30);
+        startX = clientX;
+      }, 400);
+    };
+
+    const cancelDrag = ()=>{
+      clearTimeout(longPressTimer);
+      if(!isDragging) return;
+      isDragging = false;
+      if(dragEl){ dragEl.classList.remove('dragging'); dragEl=null; }
+    };
+
+    btn.addEventListener('touchstart', e=>{
+      startScrollLeft = nav.scrollLeft;
+      startDrag(e.touches[0].clientX);
+    },{passive:true});
+
+    btn.addEventListener('touchmove', e=>{
+      if(!isDragging){ clearTimeout(longPressTimer); return; }
+      e.preventDefault();
+      const x = e.touches[0].clientX;
+      const delta = x - startX;
+      // Find target position
+      const btns = [...nav.querySelectorAll('button')];
+      const target = document.elementFromPoint(x, btn.getBoundingClientRect().top + 10);
+      if(target && target.tagName==='BUTTON' && target!==dragEl && nav.contains(target)){
+        const targetIdx = btns.indexOf(target);
+        const srcIdx = btns.indexOf(dragEl);
+        if(targetIdx !== -1 && srcIdx !== -1 && targetIdx !== srcIdx){
+          // Reorder DOM
+          if(targetIdx < srcIdx) nav.insertBefore(dragEl, target);
+          else nav.insertBefore(dragEl, target.nextSibling);
+        }
+      }
+    },{passive:false});
+
+    btn.addEventListener('touchend', ()=>{
+      clearTimeout(longPressTimer);
+      if(!isDragging) return;
+      isDragging = false;
+      dragEl && dragEl.classList.remove('dragging');
+      dragEl = null;
+      // Save new order
+      tabOrder = [...nav.querySelectorAll('button')].map(b=>{
+        return DEFAULT_TABS.find(t=>t.id===b.dataset.tab);
+      }).filter(Boolean);
+      saveTabOrder();
+      toast('Tab order saved','');
+    });
+  });
+}
+
+// ══════════════════════════════════════════════
+// FIREBASE HELPERS
+// ══════════════════════════════════════════════
 function fbRef(path){ return db.ref(path); }
 
 function setSync(ok){
@@ -482,11 +690,11 @@ function setSync(ok){
   ['sTxt','oTxt'].forEach(id=>{ const e=document.getElementById(id); if(e) e.textContent=ok?'Live':'Offline'; });
 }
 
-function fbSave(path, id, data){
-  return fbRef(path+'/'+id).set(data).then(()=>setSync(true)).catch(e=>{ setSync(false); console.error(e); });
+function fbSave(path,id,data){
+  return fbRef(path+'/'+id).set(data).then(()=>setSync(true)).catch(e=>{setSync(false);console.error(e);});
 }
-function fbDel(path, id){
-  return fbRef(path+'/'+id).remove().then(()=>setSync(true)).catch(e=>{ setSync(false); console.error(e); });
+function fbDel(path,id){
+  return fbRef(path+'/'+id).remove().then(()=>setSync(true)).catch(e=>{setSync(false);console.error(e);});
 }
 function fbClear(path){
   return fbRef(path).remove().then(()=>setSync(true)).catch(()=>setSync(false));
@@ -496,10 +704,13 @@ function arr(obj){ return obj ? Object.values(obj) : []; }
 function arrStaff(){ return arr(DATA.staff); }
 function filtStaff(){ const s=arrStaff(); return activeBranch==='ALL'?s:s.filter(x=>x.branch===activeBranch); }
 
-// ══ INIT ══
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
 window.addEventListener('load', ()=>{
+  loadTabOrder();
   document.getElementById('loadStatus').textContent = 'Connecting to Firebase...';
-  const paths = ['staff','logs','attend','targets','leaves','disc','feedback'];
+  const paths = ['staff','logs','attend','targets','leaves','disc','feedback','settings'];
   let loaded = 0;
 
   paths.forEach(p=>{
@@ -507,7 +718,6 @@ window.addEventListener('load', ()=>{
       DATA[p] = snap.val() || {};
       loaded++;
 
-      // First load: show login screen
       if(!appReady && loaded >= paths.length){
         appReady = true;
         document.getElementById('loadingOverlay').style.display='none';
@@ -516,11 +726,9 @@ window.addEventListener('load', ()=>{
         setSync(true);
       }
 
-      // BUG FIX: only refresh UI if already logged in — never touch login screen after appReady
       if(appReady){
         if(session.role==='staff') refreshStaff();
         if(session.role==='owner'){
-          // BUG FIX: don't re-render if a modal is open (prevents pin screen flash)
           if(!isAnyModalOpen()) refreshOwnerTab();
         }
         setSync(true);
@@ -528,7 +736,6 @@ window.addEventListener('load', ()=>{
     }, ()=>setSync(false));
   });
 
-  // Timeout fallback
   setTimeout(()=>{
     if(!appReady){
       appReady = true;
@@ -544,11 +751,18 @@ function isAnyModalOpen(){
 }
 
 function refreshOwnerTab(){
-  const fns={overview:rOverview,alerts:rAlerts,staff:rStaff,logs:rLogs,attend:rAttend,targets:rTargets,rank:rRank,leaves:rLeaves,monthly:rMonthly,salary:rSalary,services:rServices,feedback:rFeedback};
+  const fns={
+    overview:rOverview, alerts:rAlerts, staff:rStaff, logs:rLogs,
+    attend:rAttend, targets:rTargets, rank:rRank, leaves:rLeaves,
+    monthly:rMonthly, salary:rSalary, services:rServices, feedback:rFeedback,
+    settings:rSettings
+  };
   fns[curOTab]?.();
 }
 
-// ══ HELPERS ══
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function today(){ return new Date().toISOString().slice(0,10); }
 function nowTime(){ const d=new Date(); return pad(d.getHours())+':'+pad(d.getMinutes()); }
@@ -575,7 +789,32 @@ function toast(msg,type=''){
 
 function getTodayAtt(sid){ return DATA.attend ? Object.values(DATA.attend).find(a=>a.staffId===sid&&a.date===today()) : null; }
 
-// ══ LOGIN ══
+// ── Chart helper: destroy old instance before creating new ──
+function makeChart(canvasId, config){
+  if(chartInstances[canvasId]){
+    chartInstances[canvasId].destroy();
+    delete chartInstances[canvasId];
+  }
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return null;
+  const chart = new Chart(canvas, config);
+  chartInstances[canvasId] = chart;
+  return chart;
+}
+
+// ── Last N days date array ──
+function lastNDays(n){
+  const days=[];
+  for(let i=n-1;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    days.push(d.toISOString().slice(0,10));
+  }
+  return days;
+}
+
+// ══════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════
 window.setMode=function(m,btn){
   loginMode=m;
   document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('active'));
@@ -629,7 +868,6 @@ window.startPin=function(id){
 };
 
 window.backToNames=function(){pinBuf='';pinTarget=null;showStepName();};
-
 window.kp=function(d){if(locked||pinBuf.length>=4)return;pinBuf+=d;renderBoxes();if(pinBuf.length===4)setTimeout(verifyPin,120);};
 window.kpDel=function(){if(locked)return;pinBuf=pinBuf.slice(0,-1);renderBoxes();document.getElementById('pinErr').textContent='';};
 
@@ -644,7 +882,7 @@ function renderBoxes(){
 
 function verifyPin(){
   let ok=false;
-  if(pinTarget==='owner') ok=(pinBuf===OWNER_PIN);
+  if(pinTarget==='owner') ok=(pinBuf===getOwnerPin());
   else{ const s=DATA.staff&&DATA.staff[pinTarget]; ok=s&&String(s.pin)===String(pinBuf); }
   if(ok){
     for(let i=0;i<4;i++){const b=document.getElementById('pb'+i);b.style.borderColor='var(--green)';b.style.background='var(--green-bg)';}
@@ -690,8 +928,8 @@ function launchStaff(st){
 function launchOwner(){
   session={role:'owner',staffId:null};
   hide('loginScreen');hide('staffScreen');show('ownerScreen');
-  // BUG FIX: explicitly close any open modals before rendering
   document.querySelectorAll('.mbg').forEach(m=>m.classList.remove('open'));
+  initTabs();
   oTab('overview',document.querySelector('#oNav button'));
 }
 
@@ -699,7 +937,9 @@ window.logout=function(){
   session={role:null,staffId:null};pinBuf='';pinTarget=null;wrongAttempts=0;locked=false;
   if(lockTimer){clearInterval(lockTimer);lockTimer=null;}
   if(feedTmr){clearInterval(feedTmr);feedTmr=null;}
-  // Close all modals
+  // Destroy charts
+  Object.values(chartInstances).forEach(c=>{ try{c.destroy();}catch(e){} });
+  chartInstances={};
   document.querySelectorAll('.mbg').forEach(m=>m.classList.remove('open'));
   show('loginScreen');hide('staffScreen');hide('ownerScreen');
   loginMode='staff';
@@ -707,7 +947,9 @@ window.logout=function(){
   showStepName();
 };
 
-// ══ ATTENDANCE ══
+// ══════════════════════════════════════════════
+// ATTENDANCE
+// ══════════════════════════════════════════════
 function checkLate(tin,st){
   const s=st||DATA.staff[session.staffId];
   const base=s?.baseIn||'10:00';
@@ -760,7 +1002,39 @@ window.confirmTimeOut=function(){
   closeM('timeOutModal');
 };
 
-// ══ STAFF HOME ══
+// ══════════════════════════════════════════════
+// PRIORITY 4: Target Progress Bar
+// ══════════════════════════════════════════════
+function updateProgressBar(sales, target){
+  const wrap = document.getElementById('targetProgressWrap');
+  const fill = document.getElementById('tpwFill');
+  const pct = document.getElementById('tpwPct');
+  const motto = document.getElementById('tpwMotto');
+  const nums = document.getElementById('tpwNums');
+
+  if(!target){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+
+  const p = Math.min(Math.round((sales/target)*100), 150);
+  const displayP = Math.round((sales/target)*100);
+
+  let cls='red', label='Keep pushing 💪';
+  if(displayP >= 100){ cls='green'; label='Target achieved! 🎉'; }
+  else if(displayP >= 70){ cls='yellow'; label='Almost there 🔥'; }
+
+  fill.className = `tpw-fill ${cls}`;
+  setTimeout(()=>{ fill.style.width = Math.min(p,100)+'%'; }, 50);
+
+  pct.textContent = displayP+'%';
+  pct.style.color = cls==='green'?'var(--green)':cls==='yellow'?'var(--yellow)':'var(--red)';
+  motto.className = `tpw-motto ${cls}`;
+  motto.textContent = label;
+  nums.textContent = `₹${sales.toLocaleString('en-IN')} of ₹${target.toLocaleString('en-IN')}`;
+}
+
+// ══════════════════════════════════════════════
+// STAFF HOME
+// ══════════════════════════════════════════════
 window.sNav=function(v,i){
   document.querySelectorAll('.sbn').forEach((b,j)=>b.classList.toggle('active',j===i));
   if(v==='home') refreshStaff();
@@ -776,7 +1050,7 @@ window.sNav=function(v,i){
 
 function refreshStaff(){
   if(session.role!=='staff')return;
-  const sid=session.staffId,tod=today();
+  const sid=session.staffId, tod=today();
   const logs=arr(DATA.logs).filter(l=>l.staffId===sid&&l.date===tod);
   const total=logs.reduce((a,l)=>a+l.price,0);
   const target=getTarget(sid,tod);
@@ -791,6 +1065,9 @@ function refreshStaff(){
   document.getElementById('sNudge').textContent=total>=target?'Target hit! 🎉':target>0?`₹${rem.toLocaleString('en-IN')} more = +₹${Math.round(rem*.05)}`:`${logs.length} clients today`;
   document.getElementById('eCount').textContent=logs.length;
   document.getElementById('eTotal').textContent='₹'+total.toLocaleString('en-IN');
+
+  // Update progress bar
+  updateProgressBar(total, target);
 
   const att=getTodayAtt(sid);
   const bar=document.getElementById('attBar');
@@ -837,7 +1114,9 @@ function buildFeed(){
   if(uniq.length>1){feedTmr=setInterval(()=>{feedIdx=(feedIdx+1)%uniq.length;tk.style.transform=`translateY(-${feedIdx*26}px)`;},2500);}
 }
 
-// ══ CLIENT ENTRY ══
+// ══════════════════════════════════════════════
+// CLIENT ENTRY
+// ══════════════════════════════════════════════
 window.openClientModal=function(){
   selSvcs=[];document.getElementById('cPrice').value='';
   document.getElementById('customRow').style.display='none';
@@ -893,7 +1172,9 @@ window.delLog=function(id){
   fbDel('logs',id);toast('Deleted');
 };
 
-// ══ LEAVE ══
+// ══════════════════════════════════════════════
+// LEAVE
+// ══════════════════════════════════════════════
 window.submitLeave=function(){
   const from=document.getElementById('lFrom').value,to=document.getElementById('lTo').value,reason=document.getElementById('lReason').value.trim();
   if(!from||!to||!reason){toast('Fill all fields','r');return;}
@@ -902,7 +1183,9 @@ window.submitLeave=function(){
   closeM('leaveModal');toast('✅ Leave submitted!','g');
 };
 
-// ══ HISTORY & RANK ══
+// ══════════════════════════════════════════════
+// HISTORY & RANK
+// ══════════════════════════════════════════════
 function buildHistory(){
   const sid=session.staffId;
   const logs=arr(DATA.logs).filter(l=>l.staffId===sid).sort((a,b)=>b.date.localeCompare(a.date));
@@ -957,11 +1240,16 @@ function buildRankView(){
   }).join('');
 }
 
-// ══ OWNER TABS ══
+// ══════════════════════════════════════════════
+// OWNER TABS
+// ══════════════════════════════════════════════
 window.oTab=function(t,btn){
   curOTab=t;
   document.querySelectorAll('#oNav button').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
+  if(btn) btn.classList.add('active');
+  // Destroy charts before clearing content
+  Object.values(chartInstances).forEach(c=>{ try{c.destroy();}catch(e){} });
+  chartInstances={};
   oc().innerHTML='';
   refreshOwnerTab();
 };
@@ -973,6 +1261,9 @@ window.setBranch=function(b,el){
   window.oTab(curOTab,document.querySelector('#oNav button.active'));
 };
 
+// ══════════════════════════════════════════════
+// PRIORITY 3 & 5: Overview with Charts + Insights
+// ══════════════════════════════════════════════
 function rOverview(){
   const fs=filtStaff(),fids=fs.map(s=>s.id);
   const tod=today(),mon=thisMonth(),prev=prevMonth();
@@ -990,7 +1281,9 @@ function rOverview(){
     if(s2>tg)inc+=(s2-tg)*.05;
   });
   const gh=p=>p===null?'':p>=0?`<div style="font-size:.62rem;color:var(--green);font-weight:700">↑ +${p}%</div>`:`<div style="font-size:.62rem;color:var(--red);font-weight:700">↓ ${p}%</div>`;
-  oc().innerHTML=`<div class="cards">
+
+  oc().innerHTML=`
+  <div class="cards">
     <div class="scard"><div class="sci">💰</div><div class="scl">Today</div><div class="scv">₹${tt.toLocaleString('en-IN')}</div><div class="scs">${tl.length} entries</div></div>
     <div class="scard"><div class="sci">📅</div><div class="scl">This Month</div><div class="scv">₹${(mt/1000).toFixed(1)}K</div>${gh(sg)}</div>
     <div class="scard"><div class="sci">👥</div><div class="scl">Staff</div><div class="scv">${fs.length}</div></div>
@@ -998,7 +1291,186 @@ function rOverview(){
     <div class="scard"><div class="sci">🌴</div><div class="scl">Pending Lvs</div><div class="scv" style="color:${pend?'var(--red)':'var(--green)'}">${pend}</div></div>
   </div>
   <div style="text-align:right;margin-bottom:10px"><button class="btn bsm bgrn" onclick="exportCSV()">⬇ Export CSV</button></div>
+
+  <!-- PRIORITY 5: Smart Insights -->
+  <div class="sec">
+    <div class="sechdr"><div class="sectitle">🧠 Smart Insights</div></div>
+    <div id="insightsContainer"></div>
+  </div>
+
+  <!-- Chart: 7-day revenue trend -->
+  <div class="sec">
+    <div class="sechdr"><div class="sectitle">📈 Revenue — Last 7 Days</div></div>
+    <div class="chart-wrap"><canvas id="chartRevenue" height="130"></canvas></div>
+  </div>
+
+  <!-- Chart: Branch comparison -->
+  <div class="sec">
+    <div class="sechdr"><div class="sectitle">🏢 Branch Comparison</div></div>
+    <div class="chart-wrap"><canvas id="chartBranch" height="110"></canvas></div>
+  </div>
+
+  <!-- Chart: Staff performance top 5 -->
+  <div class="sec">
+    <div class="sechdr"><div class="sectitle">👥 Staff Performance (This Month)</div></div>
+    <div class="chart-wrap"><canvas id="chartStaff" height="130"></canvas></div>
+  </div>
+
   <div class="sec"><div class="sechdr"><div class="sectitle">📅 Today</div></div>${buildTodaySummary(tl)}</div>`;
+
+  buildInsights(fs,fids,ml,pl,mon);
+  buildRevenueChart();
+  buildBranchChart(mon);
+  buildStaffPerfChart(fs,mon);
+}
+
+// ── PRIORITY 5: Smart AI-like Insights ──
+function buildInsights(fs,fids,ml,pl,mon){
+  const insights=[];
+  const allLogs=arr(DATA.logs);
+
+  // Revenue change vs last month
+  const mt=ml.reduce((a,l)=>a+l.price,0);
+  const pt=pl.reduce((a,l)=>a+l.price,0);
+  if(pt>0){
+    const chg=Math.round(((mt-pt)/pt)*100);
+    if(chg<=-10) insights.push({cls:'ic-danger',icon:'📉',title:`Revenue dropped ${Math.abs(chg)}% vs last month`,sub:'Review pricing strategy and staff targets.'});
+    else if(chg>=15) insights.push({cls:'ic-good',icon:'🚀',title:`Revenue up ${chg}% vs last month!`,sub:'Exceptional performance — keep the momentum.'});
+  }
+
+  // MM1 vs MM2 revenue
+  const mm1Rev=allLogs.filter(l=>l.date.startsWith(mon)&&DATA.staff[l.staffId]?.branch==='MM1').reduce((a,l)=>a+l.price,0);
+  const mm2Rev=allLogs.filter(l=>l.date.startsWith(mon)&&DATA.staff[l.staffId]?.branch==='MM2').reduce((a,l)=>a+l.price,0);
+  if(mm1Rev>0&&mm2Rev>0){
+    const lower=mm1Rev<mm2Rev?'MM1':'MM2';
+    const diff=Math.round((Math.abs(mm1Rev-mm2Rev)/Math.max(mm1Rev,mm2Rev))*100);
+    if(diff>20) insights.push({cls:'ic-warn',icon:'⚠️',title:`${lower} is ${diff}% behind the other branch`,sub:'Consider redistributing workload or marketing.'});
+  }
+
+  // Staff below 60% target
+  const belowTarget=fs.filter(s=>{
+    const sales=ml.filter(l=>l.staffId===s.id).reduce((a,l)=>a+l.price,0);
+    const tgt=(s.defaultTarget||0)*26;
+    return tgt>0&&(sales/tgt)<0.6;
+  });
+  if(belowTarget.length) insights.push({cls:'ic-danger',icon:'🎯',title:`${belowTarget.length} staff below 60% of monthly target`,sub:belowTarget.map(s=>s.name.split(' ')[0]).join(', ')});
+
+  // Best performing day
+  const dayTotals={};
+  allLogs.forEach(l=>{
+    const day=new Date(l.date).toLocaleDateString('en-IN',{weekday:'long'});
+    if(!dayTotals[day])dayTotals[day]=0; dayTotals[day]+=l.price;
+  });
+  const bestDay=Object.entries(dayTotals).sort((a,b)=>b[1]-a[1])[0];
+  if(bestDay) insights.push({cls:'ic-info',icon:'📅',title:`${bestDay[0]} is your highest-revenue day`,sub:'Plan promotions and staffing around peak days.'});
+
+  // Top service insight
+  const svcMap={};
+  allLogs.filter(l=>l.date.startsWith(mon)).forEach(l=>(l.services||[]).forEach(sv=>{
+    const k=sv.toLowerCase().trim();if(!svcMap[k])svcMap[k]={name:sv,count:0};svcMap[k].count++;
+  }));
+  const topSvc=Object.values(svcMap).sort((a,b)=>b.count-a.count)[0];
+  const botSvc=Object.values(svcMap).sort((a,b)=>a.count-b.count)[0];
+  if(topSvc) insights.push({cls:'ic-good',icon:'💅',title:`${topSvc.name} is trending this month`,sub:`${topSvc.count} bookings — consider promoting add-ons.`});
+  if(botSvc&&botSvc!==topSvc) insights.push({cls:'ic-warn',icon:'📊',title:`${botSvc.name} is underperforming`,sub:'Low demand — consider discounts or repackaging.'});
+
+  // OT this month
+  const totalOT=arr(DATA.attend).filter(a=>a.date.startsWith(mon)).reduce((a,b)=>a+(b.otHours||0),0);
+  if(totalOT>20) insights.push({cls:'ic-warn',icon:'⏰',title:`High overtime this month: ${totalOT.toFixed(1)} hours`,sub:'Consider reviewing shift schedules.'});
+
+  // Late entries
+  const lateCount=arr(DATA.disc).filter(d=>d.date.startsWith(mon)&&d.type==='late').length;
+  if(lateCount>=5) insights.push({cls:'ic-danger',icon:'🚨',title:`${lateCount} late entries this month`,sub:'Punctuality needs attention — review discipline.'});
+
+  const el=document.getElementById('insightsContainer');if(!el)return;
+  if(!insights.length){ el.innerHTML='<div class="ai as">✅ No issues detected. Studio running smoothly!</div>'; return; }
+  el.innerHTML=insights.map(i=>`<div class="insight-card ${i.cls}"><div class="ic-icon">${i.icon}</div><div class="ic-body"><div class="ic-title">${i.title}</div><div class="ic-sub">${i.sub}</div></div></div>`).join('');
+}
+
+// ── Chart: Last 7 days revenue ──
+function buildRevenueChart(){
+  const days=lastNDays(7);
+  const fids=filtStaff().map(s=>s.id);
+  const vals=days.map(d=>arr(DATA.logs).filter(l=>l.date===d&&(activeBranch==='ALL'||fids.includes(l.staffId))).reduce((a,l)=>a+l.price,0));
+  const labels=days.map(d=>new Date(d).toLocaleDateString('en-IN',{month:'short',day:'numeric'}));
+  makeChart('chartRevenue',{
+    type:'line',
+    data:{
+      labels,
+      datasets:[{
+        label:'Revenue ₹',
+        data:vals,
+        borderColor:'#C9A84C',
+        backgroundColor:'rgba(201,168,76,.1)',
+        tension:.4,fill:true,
+        pointBackgroundColor:'#8B6914',
+        pointRadius:4,pointHoverRadius:6,
+        borderWidth:2.5
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'₹'+ctx.raw.toLocaleString('en-IN')}}},
+      scales:{
+        y:{ticks:{callback:v=>'₹'+(v/1000).toFixed(0)+'K',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},
+        x:{ticks:{font:{size:10}},grid:{display:false}}
+      }
+    }
+  });
+}
+
+// ── Chart: Branch revenue comparison ──
+function buildBranchChart(month){
+  const mm1=arr(DATA.logs).filter(l=>l.date.startsWith(month)&&DATA.staff[l.staffId]?.branch==='MM1').reduce((a,l)=>a+l.price,0);
+  const mm2=arr(DATA.logs).filter(l=>l.date.startsWith(month)&&DATA.staff[l.staffId]?.branch==='MM2').reduce((a,l)=>a+l.price,0);
+  makeChart('chartBranch',{
+    type:'bar',
+    data:{
+      labels:['MM1','MM2'],
+      datasets:[{
+        label:'Revenue',
+        data:[mm1,mm2],
+        backgroundColor:['rgba(201,168,76,.85)','rgba(45,125,70,.75)'],
+        borderRadius:8,borderSkipped:false
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,indexAxis:'y',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'₹'+ctx.raw.toLocaleString('en-IN')}}},
+      scales:{
+        x:{ticks:{callback:v=>'₹'+(v/1000).toFixed(0)+'K',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},
+        y:{ticks:{font:{size:11,weight:'bold'}},grid:{display:false}}
+      }
+    }
+  });
+}
+
+// ── Chart: Top 5 staff performance ──
+function buildStaffPerfChart(fs,month){
+  const data=fs.map(s=>{
+    const sales=arr(DATA.logs).filter(l=>l.staffId===s.id&&l.date.startsWith(month)).reduce((a,l)=>a+l.price,0);
+    return{name:s.name.split(' ')[0],sales};
+  }).sort((a,b)=>b.sales-a.sales).slice(0,5);
+  makeChart('chartStaff',{
+    type:'bar',
+    data:{
+      labels:data.map(d=>d.name),
+      datasets:[{
+        label:'Sales',
+        data:data.map(d=>d.sales),
+        backgroundColor:data.map((_,i)=>['#C9A84C','#8B6914','#E8D5A3','#D4A017','#B8860B'][i]||'#C9A84C'),
+        borderRadius:6,borderSkipped:false
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'₹'+ctx.raw.toLocaleString('en-IN')}}},
+      scales:{
+        y:{ticks:{callback:v=>'₹'+(v/1000).toFixed(0)+'K',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},
+        x:{ticks:{font:{size:10}},grid:{display:false}}
+      }
+    }
+  });
 }
 
 function buildTodaySummary(tl){
@@ -1014,6 +1486,9 @@ function buildTodaySummary(tl){
   </div>${noLog.length?`<div class="ai af">📋 Not logged: ${noLog.map(s=>s.name).join(', ')}</div>`:''}`;
 }
 
+// ══════════════════════════════════════════════
+// ALERTS
+// ══════════════════════════════════════════════
 function rAlerts(){
   const fs=filtStaff();let al=[];
   const tod=today(),mon=thisMonth();
@@ -1028,6 +1503,9 @@ function rAlerts(){
   oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">🔔 Alerts</div></div>${al.map(a=>`<div class="ai ${tm[a.t]}">${a.m}</div>`).join('')}</div>`;
 }
 
+// ══════════════════════════════════════════════
+// STAFF TAB
+// ══════════════════════════════════════════════
 function rStaff(){
   const list=filtStaff();
   oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">👥 Staff (${list.length})</div><button class="btn bsm bpri" onclick="openStaffModal()">＋ Add</button></div>
@@ -1046,7 +1524,6 @@ function rStaff(){
   </tbody></table></div></div>`;
 }
 
-// BUG FIX: stopPropagation prevents backdrop click from closing staffModal
 window.openStaffModal=function(id){
   editSid=id||null;
   const s=id&&DATA.staff&&DATA.staff[id];
@@ -1068,22 +1545,11 @@ window.saveStaff=function(){
   const pin=document.getElementById('sfPin').value.toString().trim();
   if(!pin||pin.length!==4||!/^\d{4}$/.test(pin)){toast('PIN must be exactly 4 digits','r');return;}
   const id=editSid||('staff_'+uid());
-  const rec={
-    id, name,
-    branch:document.getElementById('sfBranch').value||'MM1',
-    role:document.getElementById('sfRole').value.trim(),
-    salary:parseFloat(document.getElementById('sfSalary').value)||0,
-    defaultTarget:parseFloat(document.getElementById('sfTarget').value)||0,
-    baseIn:document.getElementById('sfIn').value||'10:00',
-    baseOut:document.getElementById('sfOut').value||'20:30',
-    pin
-  };
+  const rec={id,name,branch:document.getElementById('sfBranch').value||'MM1',role:document.getElementById('sfRole').value.trim(),salary:parseFloat(document.getElementById('sfSalary').value)||0,defaultTarget:parseFloat(document.getElementById('sfTarget').value)||0,baseIn:document.getElementById('sfIn').value||'10:00',baseOut:document.getElementById('sfOut').value||'20:30',pin};
   fbSave('staff',id,rec).then(()=>{
     toast('✅ Staff saved!','g');
-    // BUG FIX: close modal only AFTER save is confirmed, then refresh staff tab
     closeM('staffModal');
-    // Small delay so Firebase listener doesn't race with modal close
-    setTimeout(()=>rStaff(), 200);
+    setTimeout(()=>rStaff(),200);
   });
 };
 
@@ -1092,6 +1558,9 @@ window.delStaff=function(id){
   fbDel('staff',id);toast('Deleted');
 };
 
+// ══════════════════════════════════════════════
+// LOGS
+// ══════════════════════════════════════════════
 function rLogs(){
   const fids=filtStaff().map(s=>s.id);
   const logs=arr(DATA.logs).filter(l=>activeBranch==='ALL'||fids.includes(l.staffId)).sort((a,b)=>b.date.localeCompare(a.date)||(b.ts||0)-(a.ts||0));
@@ -1104,6 +1573,9 @@ function rLogs(){
 window.oDelLog=function(id){if(!confirm('Delete?'))return;fbDel('logs',id);toast('Deleted');};
 window.delAllLogs=function(){if(!confirm('DELETE ALL LOGS?'))return;fbClear('logs');toast('All deleted','r');};
 
+// ══════════════════════════════════════════════
+// ATTENDANCE
+// ══════════════════════════════════════════════
 function rAttend(){
   const fids=filtStaff().map(s=>s.id);
   const atts=arr(DATA.attend).filter(a=>activeBranch==='ALL'||fids.includes(a.staffId)).sort((a,b)=>b.date.localeCompare(a.date));
@@ -1131,6 +1603,9 @@ window.delDisc=function(id){if(!confirm('Delete?'))return;fbDel('disc',id);toast
 window.delAllAtt=function(){if(!confirm('Delete all attendance?'))return;fbClear('attend');toast('All deleted','r');};
 window.delAllDisc=function(){if(!confirm('Delete all discipline?'))return;fbClear('disc');toast('All deleted','r');};
 
+// ══════════════════════════════════════════════
+// TARGETS
+// ══════════════════════════════════════════════
 function rTargets(){
   const fids=filtStaff().map(s=>s.id);
   const tgts=arr(DATA.targets).filter(t=>activeBranch==='ALL'||fids.includes(t.staffId)).sort((a,b)=>b.date.localeCompare(a.date));
@@ -1139,8 +1614,42 @@ function rTargets(){
   <div class="tw"><table><thead><tr><th>Staff</th><th>Date</th><th>Target</th><th>Sales</th><th>%</th><th>Del</th></tr></thead>
   <tbody>${!tgts.length?'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No overrides</td></tr>':
   tgts.map(t=>{const s=DATA.staff&&DATA.staff[t.staffId];const ach=arr(DATA.logs).filter(l=>l.staffId===t.staffId&&l.date===t.date).reduce((a,l)=>a+l.price,0);const pct=t.amount>0?Math.round((ach/t.amount)*100):0;return`<tr><td><b>${s?.name||'?'}</b></td><td>${t.date}</td><td>₹${t.amount.toLocaleString('en-IN')}</td><td>₹${ach.toLocaleString('en-IN')}</td><td><span class="badge ${pct>=100?'bg':pct>=70?'by':'br'}">${pct}%</span></td><td><button class="btn bsm bdng" onclick="delTarget('${t.id}')">✕</button></td></tr>`;}).join('')}
-  </tbody></table></div></div>`;
+  </tbody></table></div></div>
+
+  <!-- Target achievement chart -->
+  <div class="sec">
+    <div class="sechdr"><div class="sectitle">📊 Achievement This Month</div></div>
+    <div class="chart-wrap"><canvas id="chartTargets" height="130"></canvas></div>
+  </div>`;
+  buildTargetChart();
 }
+
+function buildTargetChart(){
+  const mon=thisMonth();
+  const fs=filtStaff();
+  const labels=fs.map(s=>s.name.split(' ')[0]);
+  const targets=fs.map(s=>(s.defaultTarget||0)*26);
+  const achieved=fs.map(s=>arr(DATA.logs).filter(l=>l.staffId===s.id&&l.date.startsWith(mon)).reduce((a,l)=>a+l.price,0));
+  makeChart('chartTargets',{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'Target',data:targets,backgroundColor:'rgba(234,224,204,.8)',borderRadius:4,borderSkipped:false},
+        {label:'Achieved',data:achieved,backgroundColor:'rgba(201,168,76,.85)',borderRadius:4,borderSkipped:false}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{labels:{font:{size:10}}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ₹${ctx.raw.toLocaleString('en-IN')}`}}},
+      scales:{
+        y:{ticks:{callback:v=>'₹'+(v/1000).toFixed(0)+'K',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},
+        x:{ticks:{font:{size:10}},grid:{display:false}}
+      }
+    }
+  });
+}
+
 window.openTargetModal=function(){popSel('tStaff');document.getElementById('tDate').value=today();document.getElementById('tAmt').value='';document.getElementById('targetModal').classList.add('open');};
 window.saveTarget=function(){
   const sid=document.getElementById('tStaff').value,date=document.getElementById('tDate').value,amount=parseFloat(document.getElementById('tAmt').value)||0;
@@ -1153,6 +1662,9 @@ window.saveTarget=function(){
 window.delTarget=function(id){if(!confirm('Delete?'))return;fbDel('targets',id);toast('Deleted');};
 window.delAllTargets=function(){if(!confirm('Delete all targets?'))return;fbClear('targets');toast('All deleted','r');};
 
+// ══════════════════════════════════════════════
+// RANK
+// ══════════════════════════════════════════════
 function rRank(){
   oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">🏆 Leaderboard</div>
   <div style="display:flex;align-items:center;gap:6px"><label style="font-size:.62rem;color:var(--muted);font-weight:600">WEEK</label>
@@ -1177,6 +1689,9 @@ window.rebuildLB=function(){
   }).join('')||'<p style="color:var(--muted);text-align:center;padding:16px">No data.</p>';
 };
 
+// ══════════════════════════════════════════════
+// LEAVES
+// ══════════════════════════════════════════════
 function rLeaves(){
   const pend=arr(DATA.leaves).filter(l=>l.status==='pending');
   const rest=arr(DATA.leaves).filter(l=>l.status!=='pending').sort((a,b)=>(b.applied||'').localeCompare(a.applied||''));
@@ -1186,7 +1701,6 @@ function rLeaves(){
   ${rest.length?'<div style="font-size:.66rem;font-weight:700;color:var(--muted);text-transform:uppercase;margin:10px 0 6px">History</div>':''}
   ${rest.map(l=>lvCard(l,false)).join('')}</div>`;
 }
-
 function lvCard(l,showAct){
   const s=DATA.staff&&DATA.staff[l.staffId];
   const cls={pending:'bpend',approved:'bg',rejected:'br'};
@@ -1208,6 +1722,9 @@ window.approveLeave=function(id,status){
 };
 window.delAllLeaves=function(){if(!confirm('Delete all leaves?'))return;fbClear('leaves');toast('All deleted','r');};
 
+// ══════════════════════════════════════════════
+// SALARY CALC
+// ══════════════════════════════════════════════
 function calcSal(s,month){
   const logs=arr(DATA.logs).filter(l=>l.staffId===s.id&&l.date.startsWith(month));
   const sales=logs.reduce((a,l)=>a+l.price,0);
@@ -1227,6 +1744,9 @@ function calcSal(s,month){
   return{sales,tgt,inc,ot,otInc,late,vio,pen,halfDays,halfDed,approvedLvs,lvDed,final:s.salary+inc+otInc-pen-halfDed-lvDed};
 }
 
+// ══════════════════════════════════════════════
+// MONTHLY
+// ══════════════════════════════════════════════
 function rMonthly(){
   const mon=thisMonth();
   oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">📈 Monthly</div>
@@ -1236,8 +1756,47 @@ function rMonthly(){
     </div></div>
   <div class="tw"><table><thead><tr><th>Staff</th><th>Sales</th><th>Tgt</th><th>%</th><th>Inc</th><th>OT</th><th>Lvs</th><th>Disc</th><th>Half</th></tr></thead>
   <tbody id="mBody"></tbody><tfoot id="mFoot"></tfoot></table></div>
-  <div id="perfBar"></div></div>`;
+  <div id="perfBar"></div></div>
+
+  <!-- Monthly trend chart -->
+  <div class="sec">
+    <div class="sechdr"><div class="sectitle">📊 Monthly Revenue Trend</div></div>
+    <div class="chart-wrap"><canvas id="chartMonthly" height="130"></canvas></div>
+  </div>`;
   buildMonthly(mon);
+  buildMonthlyTrendChart();
+}
+
+function buildMonthlyTrendChart(){
+  // Last 6 months revenue
+  const months=[];
+  for(let i=5;i>=0;i--){
+    const d=new Date(); d.setMonth(d.getMonth()-i);
+    months.push(d.toISOString().slice(0,7));
+  }
+  const fids=filtStaff().map(s=>s.id);
+  const vals=months.map(m=>arr(DATA.logs).filter(l=>l.date.startsWith(m)&&(activeBranch==='ALL'||fids.includes(l.staffId))).reduce((a,l)=>a+l.price,0));
+  const labels=months.map(m=>new Date(m+'-01').toLocaleDateString('en-IN',{month:'short',year:'2-digit'}));
+  makeChart('chartMonthly',{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Revenue',
+        data:vals,
+        backgroundColor:vals.map((v,i)=>i===vals.length-1?'rgba(201,168,76,.9)':'rgba(201,168,76,.4)'),
+        borderRadius:6,borderSkipped:false
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'₹'+ctx.raw.toLocaleString('en-IN')}}},
+      scales:{
+        y:{ticks:{callback:v=>'₹'+(v/1000).toFixed(0)+'K',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},
+        x:{ticks:{font:{size:10}},grid:{display:false}}
+      }
+    }
+  });
 }
 
 window.buildMonthly=function(month){
@@ -1262,6 +1821,9 @@ window.buildMonthly=function(month){
   document.getElementById('perfBar').innerHTML=`<div style="background:${op>=100?'var(--green-bg)':op>=70?'var(--yellow-bg)':'var(--red-bg)'};border:1px solid ${op>=100?'var(--green)':op>=70?'#F0C040':'#E88'};border-radius:9px;padding:10px;margin-top:10px;text-align:center;font-size:.82rem;font-weight:800">🏠 Studio: <span style="color:${op>=100?'var(--green)':op>=70?'var(--yellow)':'var(--red)'}">${op}% achieved</span></div>`;
 };
 
+// ══════════════════════════════════════════════
+// SALARY
+// ══════════════════════════════════════════════
 function rSalary(){
   const mon=thisMonth();
   oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">💰 Salary</div><input type="month" id="sPick" value="${mon}" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:.73rem;outline:none"></div>
@@ -1306,6 +1868,9 @@ window.showSal=function(sid,month){
   document.getElementById('salModal').classList.add('open');
 };
 
+// ══════════════════════════════════════════════
+// SERVICES + CHART
+// ══════════════════════════════════════════════
 function rServices(){
   const mon=thisMonth();
   oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">💅 Services</div>
@@ -1321,14 +1886,32 @@ window.buildSvc=function(month){
   const svcs=Object.values(map).sort((a,b)=>b.count-a.count);
   const el=document.getElementById('svcData');if(!el)return;
   if(!svcs.length){el.innerHTML='<p style="color:var(--muted);text-align:center;padding:16px">No data</p>';return;}
+
   el.innerHTML=`<div class="cards">
     <div class="scard"><div class="scl">Most Sold 🌟</div><div class="scv" style="font-size:.82rem">${svcs[0].name}</div><div class="scs">${svcs[0].count}×</div></div>
     <div class="scard"><div class="scl">Least Sold</div><div class="scv" style="font-size:.82rem">${svcs[svcs.length-1].name}</div><div class="scs">${svcs[svcs.length-1].count}×</div></div>
   </div>
-  <div class="tw"><table><thead><tr><th>Service</th><th>Count</th></tr></thead>
+  <div class="chart-wrap"><canvas id="chartSvc" height="160"></canvas></div>
+  <div class="tw" style="margin-top:10px"><table><thead><tr><th>Service</th><th>Count</th></tr></thead>
   <tbody>${svcs.map(s=>`<tr><td>${s.name}</td><td><b>${s.count}</b></td></tr>`).join('')}</tbody></table></div>`;
+
+  const colors=['#C9A84C','#8B6914','#E8D5A3','#D4A017','#B8860B','#A07010','#F0C060','#7A5A0A','#DAB860','#9A7020'];
+  makeChart('chartSvc',{
+    type:'doughnut',
+    data:{
+      labels:svcs.map(s=>s.name),
+      datasets:[{data:svcs.map(s=>s.count),backgroundColor:svcs.map((_,i)=>colors[i%colors.length]),borderWidth:2,borderColor:'#fff',hoverOffset:4}]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{position:'right',labels:{font:{size:10},boxWidth:12,padding:8}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw}`}}}
+    }
+  });
 };
 
+// ══════════════════════════════════════════════
+// FEEDBACK + CHART
+// ══════════════════════════════════════════════
 function rFeedback(){
   const fs=filtStaff();
   oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">⭐ Feedback</div><button class="delall" onclick="delAllFbk()">🗑 All</button></div>
@@ -1342,7 +1925,43 @@ function rFeedback(){
       <td><span class="badge ${avg?avg>=4?'bg':avg>=2.5?'by':'br':'bgold'}">${avg?avg+' ★':'–'}</span></td>
       <td>${last?starsH(last.stars):'–'}</td>
       <td><button class="btn bsm bedt" onclick="openFbk('${s.id}')">Rate</button></td></tr>`;
-  }).join('')}</tbody></table></div></div>`;
+  }).join('')}</tbody></table></div></div>
+
+  <!-- Feedback chart -->
+  <div class="sec">
+    <div class="sechdr"><div class="sectitle">⭐ Avg Rating by Staff</div></div>
+    <div class="chart-wrap"><canvas id="chartFbk" height="120"></canvas></div>
+  </div>`;
+  buildFeedbackChart(fs);
+}
+
+function buildFeedbackChart(fs){
+  const mon=thisMonth();
+  const labels=fs.map(s=>s.name.split(' ')[0]);
+  const avgs=fs.map(s=>{
+    const fbs=arr(DATA.feedback).filter(f=>f.staffId===s.id&&f.date.startsWith(mon));
+    return fbs.length?(fbs.reduce((a,f)=>a+f.stars,0)/fbs.length):0;
+  });
+  makeChart('chartFbk',{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Avg Rating',
+        data:avgs,
+        backgroundColor:avgs.map(v=>v>=4?'rgba(45,125,70,.8)':v>=2.5?'rgba(184,134,11,.8)':'rgba(192,57,43,.7)'),
+        borderRadius:6,borderSkipped:false
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw.toFixed(1)+' ★'}}},
+      scales:{
+        y:{min:0,max:5,ticks:{stepSize:1,font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},
+        x:{ticks:{font:{size:10}},grid:{display:false}}
+      }
+    }
+  });
 }
 
 window.openFbk=function(sid){
@@ -1364,6 +1983,194 @@ window.saveFbk=function(){
 };
 window.delAllFbk=function(){if(!confirm('Delete all feedback?'))return;fbClear('feedback');toast('All deleted','r');};
 
+// ══════════════════════════════════════════════
+// PRIORITY 8: SETTINGS TAB
+// ══════════════════════════════════════════════
+function rSettings(){
+  oc().innerHTML=`
+  <!-- PIN Management -->
+  <div class="settings-group">
+    <div class="settings-group-title">🔐 Security</div>
+    <div class="settings-row" onclick="togglePinChange()">
+      <div class="sr-left">
+        <div class="sr-icon">🔑</div>
+        <div class="sr-info">
+          <div class="sr-name">Change Owner PIN</div>
+          <div class="sr-desc">Update your 4-digit secure PIN</div>
+        </div>
+      </div>
+      <span class="sr-arrow" id="pinChevron">›</span>
+    </div>
+    <div id="pinChangeBox" style="display:none;padding:14px;border-top:1px solid var(--border)">
+      <div class="pin-change-box">
+        <div class="pcb-title">Change Owner PIN</div>
+        <div class="frow"><label class="flbl">Current PIN</label><input class="finp" type="tel" maxlength="4" id="pcOld" placeholder="Enter current PIN"></div>
+        <div class="frow"><label class="flbl">New PIN</label><input class="finp" type="tel" maxlength="4" id="pcNew" placeholder="Enter new 4-digit PIN"></div>
+        <div class="frow"><label class="flbl">Confirm New PIN</label><input class="finp" type="tel" maxlength="4" id="pcConf" placeholder="Re-enter new PIN"></div>
+        <button class="btn bpri" style="width:100%;margin-top:8px" onclick="changeOwnerPin()">Update PIN</button>
+        <div class="pcb-notice">🔒 Your PIN is stored securely. If you forget your PIN, contact the system administrator to reset it from Firebase directly.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Management -->
+  <div class="settings-group">
+    <div class="settings-group-title">🗂 Navigation</div>
+    <div class="settings-row" onclick="resetTabOrder()">
+      <div class="sr-left">
+        <div class="sr-icon">↺</div>
+        <div class="sr-info">
+          <div class="sr-name">Reset Tab Order</div>
+          <div class="sr-desc">Restore default navigation layout</div>
+        </div>
+      </div>
+      <span class="sr-arrow">›</span>
+    </div>
+    <div style="padding:10px 14px;border-top:1px solid var(--border)">
+      <div class="ibox" style="margin-bottom:0">💡 Long-press any tab in the navigation bar and drag to reorder</div>
+    </div>
+  </div>
+
+  <!-- Data Management -->
+  <div class="settings-group">
+    <div class="settings-group-title">📦 Data</div>
+    <div class="settings-row" onclick="exportBackup()">
+      <div class="sr-left">
+        <div class="sr-icon">⬇</div>
+        <div class="sr-info">
+          <div class="sr-name">Export Backup</div>
+          <div class="sr-desc">Download all data as JSON</div>
+        </div>
+      </div>
+      <span class="sr-arrow">›</span>
+    </div>
+    <div class="settings-row" onclick="importBackupTrigger()">
+      <div class="sr-left">
+        <div class="sr-icon">⬆</div>
+        <div class="sr-info">
+          <div class="sr-name">Import Backup</div>
+          <div class="sr-desc">Restore from a JSON backup file</div>
+        </div>
+      </div>
+      <span class="sr-arrow">›</span>
+    </div>
+    <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importBackup(this)">
+    <div class="settings-row" onclick="exportCSV()">
+      <div class="sr-left">
+        <div class="sr-icon">📊</div>
+        <div class="sr-info">
+          <div class="sr-name">Export CSV (This Month)</div>
+          <div class="sr-desc">Download logs as spreadsheet</div>
+        </div>
+      </div>
+      <span class="sr-arrow">›</span>
+    </div>
+  </div>
+
+  <!-- Danger Zone -->
+  <div class="settings-group">
+    <div class="settings-group-title" style="color:var(--red)">⚠️ Danger Zone</div>
+    <div class="settings-row" onclick="if(confirm('Delete all logs? This cannot be undone.'))fbClear('logs').then(()=>toast('Logs cleared','r'))">
+      <div class="sr-left">
+        <div class="sr-icon">🗑</div>
+        <div class="sr-info">
+          <div class="sr-name">Clear All Logs</div>
+          <div class="sr-desc" style="color:var(--red)">Permanently delete all client entries</div>
+        </div>
+      </div>
+      <span class="sr-arrow">›</span>
+    </div>
+    <div class="settings-row" onclick="if(confirm('Clear ALL data? This cannot be undone!'))clearAllData()">
+      <div class="sr-left">
+        <div class="sr-icon">💣</div>
+        <div class="sr-info">
+          <div class="sr-name">Reset All Data</div>
+          <div class="sr-desc" style="color:var(--red)">Wipe everything — staff, logs, attendance</div>
+        </div>
+      </div>
+      <span class="sr-arrow">›</span>
+    </div>
+  </div>
+
+  <!-- App Info -->
+  <div class="settings-group">
+    <div class="settings-group-title">ℹ️ About</div>
+    <div class="settings-row" style="cursor:default">
+      <div class="sr-left">
+        <div class="sr-icon">💅</div>
+        <div class="sr-info">
+          <div class="sr-name">Miss &amp; Mam's Dashboard</div>
+          <div class="sr-desc">v2.0 · Premium Salon OS</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// PRIORITY 1: Toggle PIN change form
+window.togglePinChange=function(){
+  const box=document.getElementById('pinChangeBox');
+  const chev=document.getElementById('pinChevron');
+  const open=box.style.display==='none';
+  box.style.display=open?'block':'none';
+  chev.textContent=open?'⌄':'›';
+};
+
+// PRIORITY 1: Change owner PIN
+window.changeOwnerPin=function(){
+  const old=document.getElementById('pcOld').value.trim();
+  const nw=document.getElementById('pcNew').value.trim();
+  const cf=document.getElementById('pcConf').value.trim();
+  if(!old||!nw||!cf){toast('Fill all fields','r');return;}
+  if(old!==getOwnerPin()){toast('Current PIN incorrect','r');return;}
+  if(!/^\d{4}$/.test(nw)){toast('New PIN must be 4 digits','r');return;}
+  if(nw!==cf){toast('PINs do not match','r');return;}
+  const settings=DATA.settings||{};
+  settings.ownerPin=nw;
+  fbSave('settings','config',settings).then(()=>{
+    toast('🔑 PIN updated successfully!','g');
+    document.getElementById('pcOld').value='';
+    document.getElementById('pcNew').value='';
+    document.getElementById('pcConf').value='';
+    togglePinChange();
+  });
+};
+
+// PRIORITY 8: Export JSON backup
+window.exportBackup=function(){
+  const backup={staff:DATA.staff,logs:DATA.logs,attend:DATA.attend,targets:DATA.targets,leaves:DATA.leaves,disc:DATA.disc,feedback:DATA.feedback,exportedAt:new Date().toISOString()};
+  const a=document.createElement('a');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(backup,null,2));
+  a.download=`MissMams_Backup_${today()}.json`;a.click();
+  toast('📥 Backup exported!','g');
+};
+
+window.importBackupTrigger=function(){
+  document.getElementById('importFileInput').click();
+};
+
+window.importBackup=function(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.staff&&!data.logs){toast('Invalid backup file','r');return;}
+      if(!confirm(`Import backup from ${data.exportedAt||'unknown date'}? This will overwrite current data.`))return;
+      const paths=['staff','logs','attend','targets','leaves','disc','feedback'];
+      Promise.all(paths.map(p=>data[p]?fbRef(p).set(data[p]):Promise.resolve())).then(()=>toast('✅ Backup imported!','g')).catch(()=>toast('Import failed','r'));
+    }catch(err){toast('Invalid JSON file','r');}
+  };
+  reader.readAsText(file);
+  input.value='';
+};
+
+window.clearAllData=function(){
+  const paths=['logs','attend','targets','leaves','disc','feedback'];
+  Promise.all(paths.map(p=>fbClear(p))).then(()=>toast('All data cleared','r'));
+};
+
+// CSV Export
 window.exportCSV=function(){
   const month=document.getElementById('mPick')?.value||thisMonth();
   const fids=filtStaff().map(s=>s.id);
@@ -1375,6 +2182,9 @@ window.exportCSV=function(){
   a.download=`MissMams_${month}.csv`;a.click();toast('📥 Exported!','g');
 };
 
+// ══════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════
 function popSel(id){
   const el=document.getElementById(id);if(!el)return;
   el.innerHTML=arrStaff().map(s=>`<option value="${s.id}">${s.name} (${s.branch})</option>`).join('');
@@ -1382,9 +2192,8 @@ function popSel(id){
 
 window.closeM=function(id){document.getElementById(id)?.classList.remove('open');};
 
-// BUG FIX: staffModal does NOT close on backdrop click to avoid accidental dismissal
 document.querySelectorAll('.mbg').forEach(el=>{
-  if(el.id==='staffModal') return; // skip staffModal — close only via buttons
+  if(el.id==='staffModal') return;
   el.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
 });
 
