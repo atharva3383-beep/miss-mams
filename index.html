@@ -113,7 +113,25 @@ html,body{height:100%;overflow:hidden;background:var(--bg)}
 .fi{height:26px;display:flex;align-items:center;gap:5px;padding:0 8px;font-size:.66rem;color:var(--dark)}
 .fdot{width:5px;height:5px;border-radius:50%;background:var(--gold-l);flex-shrink:0}
 
-/* ── PRIORITY 4: Target Progress Bar ── */
+/* ── Today's Staff Progress cards ── */
+.sp-grid{display:flex;flex-direction:column;gap:7px}
+.sp-card{background:#fff;border-radius:11px;border:1px solid var(--border);padding:10px 12px;transition:transform .15s,box-shadow .15s}
+.sp-card:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(139,105,20,.1)}
+.sp-top{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.sp-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-l));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.72rem;flex-shrink:0}
+.sp-info{flex:1;min-width:0}
+.sp-name{font-size:.78rem;font-weight:800;color:var(--dark)}
+.sp-sub{font-size:.6rem;color:var(--muted);margin-top:1px}
+.sp-right{text-align:right;flex-shrink:0}
+.sp-pct{font-size:.9rem;font-weight:900}
+.sp-rank{font-size:.58rem;font-weight:700;padding:2px 6px;border-radius:99px;margin-top:2px;display:inline-block}
+.sp-track{height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:5px}
+.sp-fill{height:100%;border-radius:99px;transition:width .7s cubic-bezier(.4,0,.2,1)}
+.sp-fill.green{background:linear-gradient(90deg,#2D7D46,#38A169)}
+.sp-fill.yellow{background:linear-gradient(90deg,#B8860B,#D4A017)}
+.sp-fill.red{background:linear-gradient(90deg,#C0392B,#E74C3C)}
+.sp-meta{display:flex;justify-content:space-between;font-size:.62rem;color:var(--muted)}
+.sp-meta b{color:var(--dark)}
 .target-progress-wrap{flex-shrink:0;background:#fff;border-radius:12px;border:1px solid var(--border);padding:10px 12px;position:relative;overflow:hidden}
 .tpw-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .tpw-label{font-size:.65rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
@@ -543,7 +561,7 @@ const db = firebase.database();
 // ══════════════════════════════════════════════
 const DEFAULT_OWNER_PIN = '0000';
 const LEAVE_LIMIT = 4;
-const SVCS = ['Cleanup','Face Wax','Facial','Hair Colour','Hair Spa','Haircut','Hairwash','Hand Wax','Threadwork','Upperlip'];
+const SVCS = ['Cleanup','Face Wax','Facial','Hair Colour','Hair Spa','Haircut','Hairwash','Hand Wax','Half Leg Wax','Manicure','Pedicure','Threadwork','Upperlip'];
 
 // Default tab order
 const DEFAULT_TABS = [
@@ -1221,8 +1239,14 @@ function getWeekRange(d){
   return{mon:mon.toISOString().slice(0,10),sun:sun.toISOString().slice(0,10)};
 }
 
-function calcScores(range){
-  return filtStaff().map(s=>{
+// ══════════════════════════════════════════════
+// CENTRALIZED RANKING ENGINE (used by owner + staff)
+// ══════════════════════════════════════════════
+function calcScores(range, branchFilter){
+  const staffList = branchFilter && branchFilter !== 'ALL'
+    ? arrStaff().filter(s => s.branch === branchFilter)
+    : arrStaff();
+  return staffList.map(s=>{
     const wl=arr(DATA.logs).filter(l=>l.staffId===s.id&&l.date>=range.mon&&l.date<=range.sun);
     const byDay={};wl.forEach(l=>{if(!byDay[l.date])byDay[l.date]=0;byDay[l.date]+=l.price;});
     const sales=Object.values(byDay).reduce((a,b)=>a+b,0);
@@ -1237,8 +1261,9 @@ function calcScores(range){
   }).sort((a,b)=>b.total-a.total);
 }
 
+// staff rank view — uses ALL branches (same pool as owner default)
 function buildRankView(){
-  const sc=calcScores(getWeekRange(today()));
+  const sc=calcScores(getWeekRange(today()), 'ALL');
   const LABS=['Top 🥇','Rising 🌟','Steady ⭐','Effort 💪','Team 🎯'];
   if(!sc.length)return'<p style="color:var(--muted);text-align:center;padding:20px">No data.</p>';
   return`<div class="ibox">50% Sales · 25% Discipline · 25% Overtime</div>`+sc.map((item,i)=>{
@@ -1303,6 +1328,13 @@ function rOverview(){
     <div class="scard"><div class="sci">🎁</div><div class="scl">Incentives</div><div class="scv" style="color:var(--green)">₹${Math.round(inc).toLocaleString('en-IN')}</div></div>
     <div class="scard"><div class="sci">🌴</div><div class="scl">Pending Lvs</div><div class="scv" style="color:${pend?'var(--red)':'var(--green)'}">${pend}</div></div>
   </div>
+
+  <!-- TODAY'S STAFF PROGRESS -->
+  <div class="sec">
+    <div class="sechdr"><div class="sectitle">👥 Today's Staff Progress</div><span style="font-size:.62rem;color:var(--muted)">${tod}</span></div>
+    <div class="sp-grid" id="spGrid"></div>
+  </div>
+
   <div style="text-align:right;margin-bottom:10px"><button class="btn bsm bgrn" onclick="exportCSV()">⬇ Export CSV</button></div>
 
   <!-- PRIORITY 5: Smart Insights -->
@@ -1332,9 +1364,66 @@ function rOverview(){
   <div class="sec"><div class="sechdr"><div class="sectitle">📅 Today</div></div>${buildTodaySummary(tl)}</div>`;
 
   buildInsights(fs,fids,ml,pl,mon);
+  buildTodayStaffProgress(fs, tod);
   buildRevenueChart();
   buildBranchChart(mon);
   buildStaffPerfChart(fs,mon);
+}
+
+// ── Today's Staff Progress builder ──
+function buildTodayStaffProgress(fs, tod){
+  const el = document.getElementById('spGrid'); if(!el) return;
+  // Get this week's ranks using centralized engine
+  const weekRanks = calcScores(getWeekRange(tod), activeBranch);
+  const rankMap = {}; weekRanks.forEach((r,i)=>{ rankMap[r.s.id]=i+1; });
+  const RANK_LABELS = ['','🥇','🥈','🥉'];
+
+  // Build per-staff today data
+  const cards = fs.map(s=>{
+    const logs = arr(DATA.logs).filter(l=>l.staffId===s.id&&l.date===tod);
+    const sales = logs.reduce((a,l)=>a+l.price,0);
+    const target = getTarget(s.id,tod);
+    const pct = target>0 ? Math.round((sales/target)*100) : (sales>0?100:0);
+    const rem = Math.max(0,target-sales);
+    const rank = rankMap[s.id]||99;
+    return{s,sales,target,pct,rem,clients:logs.length,rank};
+  }).sort((a,b)=>b.pct-a.pct);
+
+  if(!cards.length){ el.innerHTML='<div class="empty">No staff found.</div>'; return; }
+
+  el.innerHTML = cards.map(c=>{
+    const cls = c.pct>=100?'green':c.pct>=70?'yellow':'red';
+    const pctColor = cls==='green'?'var(--green)':cls==='yellow'?'var(--yellow)':'var(--red)';
+    const rankBadge = c.rank<=3
+      ? `<span class="sp-rank" style="background:var(--gold-pale);color:var(--gold)">${RANK_LABELS[c.rank]} #${c.rank}</span>`
+      : `<span class="sp-rank" style="background:var(--bg);color:var(--muted)">#${c.rank}</span>`;
+    const fillW = Math.min(c.pct,100);
+    return `<div class="sp-card">
+      <div class="sp-top">
+        <div class="sp-av">${c.s.name.slice(0,2).toUpperCase()}</div>
+        <div class="sp-info">
+          <div class="sp-name">${c.s.name} <span class="badge bgold" style="font-size:.52rem">${c.s.branch}</span></div>
+          <div class="sp-sub">${c.clients} client${c.clients!==1?'s':''} · ${c.target?'Target ₹'+c.target.toLocaleString('en-IN'):'No target set'}</div>
+        </div>
+        <div class="sp-right">
+          <div class="sp-pct" style="color:${pctColor}">${c.pct}%</div>
+          ${rankBadge}
+        </div>
+      </div>
+      <div class="sp-track"><div class="sp-fill ${cls}" style="width:0%" data-w="${fillW}"></div></div>
+      <div class="sp-meta">
+        <span>₹${c.sales.toLocaleString('en-IN')} earned</span>
+        <span>${c.rem>0?'<b>₹'+c.rem.toLocaleString('en-IN')+'</b> left':'<b style=\'color:var(--green)\'>✓ Done!</b>'}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Animate bars after render
+  requestAnimationFrame(()=>{
+    el.querySelectorAll('.sp-fill').forEach(bar=>{
+      setTimeout(()=>{ bar.style.width = bar.dataset.w+'%'; }, 60);
+    });
+  });
 }
 
 // ── PRIORITY 5: Smart AI-like Insights ──
@@ -1748,7 +1837,7 @@ function rRank(){
 }
 window.rebuildLB=function(){
   const range=getWeekRange(document.getElementById('lbDate')?.value||today());
-  const sc=calcScores(range);
+  const sc=calcScores(range, activeBranch);
   const LABS=['Top 🥇','Rising 🌟','Steady ⭐','Effort 💪','Team 🎯'];
   const el=document.getElementById('lbList');if(!el)return;
   el.innerHTML=sc.map((item,i)=>{
