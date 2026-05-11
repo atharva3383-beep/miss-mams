@@ -1234,9 +1234,15 @@ function buildHistory(){
 }
 
 function getWeekRange(d){
-  const dt=new Date(d),day=dt.getDay(),diff=dt.getDate()-day+(day===0?-6:1);
-  const mon=new Date(new Date(dt).setDate(diff)),sun=new Date(mon);sun.setDate(mon.getDate()+6);
-  return{mon:mon.toISOString().slice(0,10),sun:sun.toISOString().slice(0,10)};
+  // Parse date parts directly to avoid timezone shift
+  const [y,m,day] = d.split('-').map(Number);
+  const dt = new Date(y, m-1, day); // local time, no UTC shift
+  const dow = dt.getDay(); // 0=Sun,1=Mon...6=Sat
+  const diffToMon = dow===0 ? -6 : 1-dow; // how many days back to Monday
+  const mon = new Date(y, m-1, day+diffToMon);
+  const sun = new Date(y, m-1, day+diffToMon+6);
+  const fmt = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  return { mon: fmt(mon), sun: fmt(sun) };
 }
 
 // ══════════════════════════════════════════════
