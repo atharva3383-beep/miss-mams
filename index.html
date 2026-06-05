@@ -285,57 +285,6 @@ tr:hover td{background:var(--gold-pale)}
 .pcb-title{font-size:.78rem;font-weight:800;color:var(--gold);margin-bottom:10px}
 .pcb-notice{font-size:.64rem;color:var(--muted);margin-top:8px;padding:6px 8px;background:#fff;border-radius:6px;border:1px solid var(--border)}
 
-/* ── SECTION 1: Attendance cards + calendar ── */
-.att-staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:9px;margin-bottom:14px}
-.att-card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:11px 12px;cursor:pointer;transition:transform .12s,box-shadow .12s}
-.att-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(139,105,20,.12)}
-.att-card-top{display:flex;align-items:center;gap:9px;margin-bottom:9px}
-.att-card-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-l));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.78rem;flex-shrink:0}
-.att-card-name{font-size:.8rem;font-weight:800;color:var(--dark);line-height:1.1}
-.att-card-sub{font-size:.58rem;color:var(--muted);margin-top:1px}
-.att-card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:7px}
-.att-stat{text-align:center;padding:4px 2px;background:var(--bg);border-radius:6px}
-.att-stat-v{font-size:.86rem;font-weight:900;line-height:1}
-.att-stat-l{font-size:.52rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-top:2px}
-.att-stat.p .att-stat-v{color:var(--green)}
-.att-stat.l .att-stat-v{color:var(--blue)}
-.att-stat.a .att-stat-v{color:var(--red)}
-.att-card-pct{display:flex;justify-content:space-between;align-items:center;font-size:.66rem;font-weight:700}
-.att-pct-bar{flex:1;height:5px;background:var(--border);border-radius:99px;margin:0 7px;overflow:hidden}
-.att-pct-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),#38A169);transition:width .6s ease}
-
-/* Calendar */
-.cal-wrap{padding:8px}
-.cal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-.cal-nav{display:flex;align-items:center;gap:8px}
-.cal-nav button{padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:.75rem;font-weight:700}
-.cal-nav button:hover{background:var(--gold-pale)}
-.cal-mon{font-size:.85rem;font-weight:800;color:var(--dark);min-width:120px;text-align:center}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-.cal-dow{font-size:.6rem;font-weight:800;color:var(--muted);text-transform:uppercase;text-align:center;padding:5px 0}
-.cal-day{aspect-ratio:1;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.74rem;font-weight:700;border:1.5px solid transparent;cursor:default;position:relative}
-.cal-day.blank{visibility:hidden}
-.cal-day.future{color:var(--muted);background:transparent}
-.cal-day.present{background:var(--green-bg);color:var(--green);border-color:#6EE7A0}
-.cal-day.leave{background:var(--blue-bg);color:var(--blue);border-color:#93C5FD}
-.cal-day.absent{background:var(--red-bg);color:var(--red);border-color:#fca5a5}
-.cal-day.weekend{background:var(--bg);color:var(--muted)}
-.cal-day-num{font-size:.78rem;font-weight:800;line-height:1}
-.cal-day-dot{width:5px;height:5px;border-radius:50%;margin-top:2px}
-.cal-day.present .cal-day-dot{background:var(--green)}
-.cal-day.leave .cal-day-dot{background:var(--blue)}
-.cal-day.absent .cal-day-dot{background:var(--red)}
-.cal-legend{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap}
-.cal-leg{display:flex;align-items:center;gap:4px;font-size:.65rem;color:var(--muted)}
-.cal-leg-box{width:11px;height:11px;border-radius:3px}
-.cal-leg-box.p{background:var(--green-bg);border:1.5px solid #6EE7A0}
-.cal-leg-box.l{background:var(--blue-bg);border:1.5px solid #93C5FD}
-.cal-leg-box.a{background:var(--red-bg);border:1.5px solid #fca5a5}
-.profile-records{margin-top:14px}
-.profile-rec{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border-radius:8px;margin-bottom:5px;font-size:.74rem;border:1px solid var(--border)}
-.profile-rec-date{font-weight:700;color:var(--dark)}
-.profile-rec-times{color:var(--muted);font-size:.66rem}
-
 /* TOAST */
 .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--gold-l));color:#fff;padding:9px 18px;border-radius:10px;font-size:.78rem;font-weight:700;z-index:9999;white-space:nowrap;max-width:92vw;text-align:center;animation:su .2s ease;box-shadow:0 4px 14px rgba(139,105,20,.4)}
 .tr{background:linear-gradient(135deg,#C0392B,#E74C3C)!important}
@@ -1775,232 +1724,23 @@ window.oDelLog=function(id){if(!confirm('Delete?'))return;fbDel('logs',id);toast
 window.delAllLogs=function(){if(!confirm('DELETE ALL LOGS?'))return;fbClear('logs');toast('All deleted','r');};
 
 // ══════════════════════════════════════════════
-// SECTION 1: Attendance — rebuild with auto-Leave + per-staff cards
+// ATTENDANCE
 // ══════════════════════════════════════════════
-// Status rule:
-//   in & out present → Present
-//   in OR out present (partial) → Present (still counted, but considered partial)
-//   in & out both empty/missing record → Leave (this is the new rule)
-//   approved leave for date → also Leave
-// Past dates with no attendance record at all are treated as Leave (per spec).
-// Working days exclude future dates and Sundays.
-
-function isSunday(dateStr){
-  const [y,m,d] = dateStr.split('-').map(Number);
-  return new Date(y, m-1, d).getDay() === 0;
-}
-
-function getAttStatus(staffId, dateStr){
-  if(dateStr > today()) return 'future';
-  if(isSunday(dateStr)) return 'weekend';
-  // Check if on approved leave
-  const onLeave = arr(DATA.leaves).some(l =>
-    l.staffId===staffId && l.status==='approved' &&
-    dateStr >= l.from && dateStr <= l.to
-  );
-  if(onLeave) return 'leave';
-  // Find attendance record
-  const att = arr(DATA.attend).find(a => a.staffId===staffId && a.date===dateStr);
-  if(!att) return 'leave';        // no record = leave (new rule)
-  if(!att.in && !att.out) return 'leave';
-  return 'present';
-}
-
-function calcAttSummary(staffId, monthStr){
-  // monthStr like '2026-05'
-  const [y,m] = monthStr.split('-').map(Number);
-  const daysInMonth = new Date(y, m, 0).getDate();
-  let present=0, leave=0, absent=0, workingDays=0;
-  for(let d=1; d<=daysInMonth; d++){
-    const dateStr = `${y}-${pad(m)}-${pad(d)}`;
-    if(dateStr > today()) continue;
-    if(isSunday(dateStr)) continue;
-    workingDays++;
-    const st = getAttStatus(staffId, dateStr);
-    if(st==='present') present++;
-    else if(st==='leave') leave++;
-    else absent++; // not used by new rule but kept for safety
-  }
-  const pct = workingDays>0 ? Math.round((present/workingDays)*100) : 0;
-  return {present, leave, absent, workingDays, pct};
-}
-
 function rAttend(){
-  const mon = thisMonth();
-  const fs = filtStaff();
-
-  oc().innerHTML = `<div class="sec">
-    <div class="sechdr">
-      <div class="sectitle">🕐 Attendance</div>
-      <input type="month" id="attMonPick" value="${mon}" onchange="rebuildAttCards(this.value)" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:.73rem;outline:none">
-    </div>
-    <div class="ibox">Tap any staff card to view calendar &amp; records. Missing records auto-count as Leave.</div>
-    <div class="att-staff-grid" id="attStaffGrid"></div>
-  </div>
-
-  <div class="sec">
-    <div class="sechdr">
-      <div class="sectitle">📋 All Records</div>
-      <button class="delall" onclick="delAllAtt()">🗑 All</button>
-    </div>
-    <div class="tw" id="attRecordsTable"></div>
-  </div>
-
-  <div class="sec">
-    <div class="sechdr">
-      <div class="sectitle">⚡ Discipline</div>
-      <div style="display:flex;gap:6px">
-        <button class="btn bsm bpri" onclick="openDiscModal()">＋ Add</button>
-        <button class="delall" onclick="delAllDisc()">🗑 All</button>
-      </div>
-    </div>
-    <div class="tw" id="discTable"></div>
-  </div>`;
-
-  rebuildAttCards(mon);
-  buildAttRecordsTable();
-  buildDiscTable();
+  const fids=filtStaff().map(s=>s.id);
+  const atts=arr(DATA.attend).filter(a=>activeBranch==='ALL'||fids.includes(a.staffId)).sort((a,b)=>b.date.localeCompare(a.date));
+  const discs=arr(DATA.disc).filter(d=>activeBranch==='ALL'||fids.includes(d.staffId)).sort((a,b)=>b.date.localeCompare(a.date));
+  oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">🕐 Attendance</div><button class="delall" onclick="delAllAtt()">🗑 All</button></div>
+  <div class="tw"><table><thead><tr><th>Date</th><th>Staff</th><th>In</th><th>Out</th><th>Late</th><th>OT</th><th>Half</th><th>Edit</th></tr></thead>
+  <tbody>${!atts.length?'<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px">No records</td></tr>':
+  atts.map(a=>{const s=DATA.staff&&DATA.staff[a.staffId];return`<tr><td>${a.date}</td><td><b>${s?.name||'?'}</b></td><td>${a.in||'–'}</td><td>${a.out||'–'}</td><td>${a.lateMins>0?`<span class="badge by">${a.lateMins}m</span>`:'–'}</td><td>${(a.otHours||0)>0?a.otHours.toFixed(1)+'h':'–'}</td><td>${a.halfDay?'<span class="badge bpink">½</span>':'–'}</td><td><button class="btn bsm bedt" onclick="openAttEdit('${a.id}')">✏️</button></td></tr>`;}).join('')}
+  </tbody></table></div></div>
+  <div class="sec"><div class="sechdr"><div class="sectitle">⚡ Discipline</div><button class="btn bsm bpri" onclick="openDiscModal()">＋ Add</button><button class="delall" onclick="delAllDisc()">🗑 All</button></div>
+  <div class="tw"><table><thead><tr><th>Date</th><th>Staff</th><th>Type</th><th>Note</th><th>Penalty</th><th>Del</th></tr></thead>
+  <tbody>${!discs.length?'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No events</td></tr>':
+  discs.map(d=>{const s=DATA.staff&&DATA.staff[d.staffId];return`<tr><td>${d.date}</td><td><b>${s?.name||'?'}</b></td><td><span class="badge ${d.type==='late'?'by':'br'}">${d.type}</span></td><td>${d.note||'–'}</td><td><span class="badge br">-₹${d.type==='late'?100:200}</span></td><td><button class="btn bsm bdng" onclick="delDisc('${d.id}')">✕</button></td></tr>`;}).join('')}
+  </tbody></table></div></div>`;
 }
-
-window.rebuildAttCards = function(month){
-  const fs = filtStaff();
-  const grid = document.getElementById('attStaffGrid');
-  if(!fs.length){ grid.innerHTML = '<div class="empty" style="grid-column:1/-1">No staff</div>'; return; }
-  grid.innerHTML = fs.map(s=>{
-    const sm = calcAttSummary(s.id, month);
-    return `<div class="att-card" onclick="openAttProfile('${s.id}','${month}')">
-      <div class="att-card-top">
-        <div class="att-card-av">${s.name.slice(0,2).toUpperCase()}</div>
-        <div>
-          <div class="att-card-name">${s.name.split(' ')[0]}</div>
-          <div class="att-card-sub">${s.branch} · ${sm.workingDays} working days</div>
-        </div>
-      </div>
-      <div class="att-card-stats">
-        <div class="att-stat p"><div class="att-stat-v">${sm.present}</div><div class="att-stat-l">Present</div></div>
-        <div class="att-stat l"><div class="att-stat-v">${sm.leave}</div><div class="att-stat-l">Leave</div></div>
-        <div class="att-stat a"><div class="att-stat-v">${sm.absent}</div><div class="att-stat-l">Absent</div></div>
-      </div>
-      <div class="att-card-pct">
-        <span>Attendance</span>
-        <div class="att-pct-bar"><div class="att-pct-fill" style="width:${sm.pct}%"></div></div>
-        <span style="color:${sm.pct>=85?'var(--green)':sm.pct>=70?'var(--yellow)':'var(--red)'}">${sm.pct}%</span>
-      </div>
-    </div>`;
-  }).join('');
-};
-
-function buildAttRecordsTable(){
-  const fids = filtStaff().map(s=>s.id);
-  const atts = arr(DATA.attend).filter(a=>activeBranch==='ALL'||fids.includes(a.staffId)).sort((a,b)=>b.date.localeCompare(a.date));
-  const el = document.getElementById('attRecordsTable'); if(!el) return;
-  el.innerHTML = `<table>
-    <thead><tr><th>Date</th><th>Staff</th><th>In</th><th>Out</th><th>Late</th><th>OT</th><th>Half</th><th>Edit</th></tr></thead>
-    <tbody>${!atts.length?'<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px">No records</td></tr>':
-    atts.slice(0,100).map(a=>{
-      const s=DATA.staff&&DATA.staff[a.staffId];
-      return `<tr><td>${a.date}</td><td><b>${s?.name||'?'}</b></td><td>${a.in||'–'}</td><td>${a.out||'–'}</td><td>${a.lateMins>0?`<span class="badge by">${a.lateMins}m</span>`:'–'}</td><td>${(a.otHours||0)>0?a.otHours.toFixed(1)+'h':'–'}</td><td>${a.halfDay?'<span class="badge bpink">½</span>':'–'}</td><td><button class="btn bsm bedt" onclick="openAttEdit('${a.id}')">✏️</button></td></tr>`;
-    }).join('')}</tbody>
-  </table>`;
-}
-
-function buildDiscTable(){
-  const fids = filtStaff().map(s=>s.id);
-  const discs = arr(DATA.disc).filter(d=>activeBranch==='ALL'||fids.includes(d.staffId)).sort((a,b)=>b.date.localeCompare(a.date));
-  const el = document.getElementById('discTable'); if(!el) return;
-  el.innerHTML = `<table>
-    <thead><tr><th>Date</th><th>Staff</th><th>Type</th><th>Note</th><th>Penalty</th><th>Del</th></tr></thead>
-    <tbody>${!discs.length?'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No events</td></tr>':
-    discs.map(d=>{
-      const s=DATA.staff&&DATA.staff[d.staffId];
-      return `<tr><td>${d.date}</td><td><b>${s?.name||'?'}</b></td><td><span class="badge ${d.type==='late'?'by':'br'}">${d.type}</span></td><td>${d.note||'–'}</td><td><span class="badge br">-₹${d.type==='late'?100:200}</span></td><td><button class="btn bsm bdng" onclick="delDisc('${d.id}')">✕</button></td></tr>`;
-    }).join('')}</tbody>
-  </table>`;
-}
-
-// ── Attendance Profile (calendar + records) ──
-let profileSid = null, profileMonth = null;
-
-window.openAttProfile = function(sid, month){
-  profileSid = sid; profileMonth = month;
-  const s = DATA.staff[sid];
-  openBig(`🕐 ${s.name} · Attendance`, buildAttProfileHTML(sid, month));
-  // After insertion into bigContent, hook up calendar nav
-};
-
-function buildAttProfileHTML(sid, month){
-  const s = DATA.staff[sid];
-  const sm = calcAttSummary(sid, month);
-  const [y,m] = month.split('-').map(Number);
-  const monLabel = new Date(y, m-1, 1).toLocaleDateString('en-IN',{month:'long', year:'numeric'});
-  const daysInMonth = new Date(y, m, 0).getDate();
-  const firstDow = new Date(y, m-1, 1).getDay(); // 0=Sun
-  const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-  // Build calendar grid
-  let calCells = '';
-  // Blank cells before day 1
-  for(let i=0; i<firstDow; i++) calCells += '<div class="cal-day blank"></div>';
-  for(let d=1; d<=daysInMonth; d++){
-    const dateStr = `${y}-${pad(m)}-${pad(d)}`;
-    const status = getAttStatus(sid, dateStr);
-    calCells += `<div class="cal-day ${status}"><div class="cal-day-num">${d}</div>${(status==='present'||status==='leave'||status==='absent')?'<div class="cal-day-dot"></div>':''}</div>`;
-  }
-
-  // Records list (for this month, sorted)
-  const records = arr(DATA.attend)
-    .filter(a=>a.staffId===sid && a.date.startsWith(month))
-    .sort((a,b)=>b.date.localeCompare(a.date));
-
-  return `
-    <div class="cards" style="margin-bottom:10px">
-      <div class="scard"><div class="scl">Present</div><div class="scv" style="color:var(--green)">${sm.present}</div></div>
-      <div class="scard"><div class="scl">Leave</div><div class="scv" style="color:var(--blue)">${sm.leave}</div></div>
-      <div class="scard"><div class="scl">Attendance %</div><div class="scv" style="color:${sm.pct>=85?'var(--green)':sm.pct>=70?'var(--yellow)':'var(--red)'}">${sm.pct}%</div></div>
-    </div>
-
-    <div class="cal-wrap">
-      <div class="cal-hdr">
-        <div class="cal-nav">
-          <button onclick="profileShiftMonth(-1)">←</button>
-          <div class="cal-mon">${monLabel}</div>
-          <button onclick="profileShiftMonth(1)">→</button>
-        </div>
-        <input type="month" value="${month}" onchange="profileSetMonth(this.value)" style="padding:4px 6px;border:1.5px solid var(--border);border-radius:6px;font-size:.7rem;outline:none">
-      </div>
-      <div class="cal-grid">
-        ${DOW.map(d=>`<div class="cal-dow">${d}</div>`).join('')}
-        ${calCells}
-      </div>
-      <div class="cal-legend">
-        <div class="cal-leg"><div class="cal-leg-box p"></div>Present</div>
-        <div class="cal-leg"><div class="cal-leg-box l"></div>Leave</div>
-        <div class="cal-leg"><div class="cal-leg-box a"></div>Absent</div>
-      </div>
-    </div>
-
-    <div class="profile-records">
-      <div class="sectitle" style="margin-bottom:7px;font-size:.78rem">📋 Records this month</div>
-      ${records.length ? records.map(r=>`<div class="profile-rec">
-        <div><div class="profile-rec-date">${r.date}</div>
-        <div class="profile-rec-times">In: ${r.in||'–'} · Out: ${r.out||'–'} ${r.lateMins>0?'· ⚠️ '+r.lateMins+'m late':''} ${r.otHours>0?'· OT '+r.otHours.toFixed(1)+'h':''} ${r.halfDay?'· ½ day':''}</div></div>
-        <button class="btn bsm bedt" onclick="openAttEdit('${r.id}')">✏️</button>
-      </div>`).join('') : '<div style="color:var(--muted);text-align:center;padding:10px;font-size:.72rem">No records this month</div>'}
-    </div>
-  `;
-}
-
-window.profileShiftMonth = function(delta){
-  const [y,m] = profileMonth.split('-').map(Number);
-  const d = new Date(y, m-1+delta, 1);
-  profileMonth = `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
-  document.getElementById('bigContent').innerHTML = buildAttProfileHTML(profileSid, profileMonth);
-};
-
-window.profileSetMonth = function(month){
-  profileMonth = month;
-  document.getElementById('bigContent').innerHTML = buildAttProfileHTML(profileSid, profileMonth);
-};
 window.openDiscModal=function(){popSel('dStaff');document.getElementById('dDate').value=today();document.getElementById('discModal').classList.add('open');};
 window.saveDisc=function(){
   const sid=document.getElementById('dStaff').value,date=document.getElementById('dDate').value,type=document.getElementById('dType').value,note=document.getElementById('dNote').value.trim();
