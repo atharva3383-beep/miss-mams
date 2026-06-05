@@ -1443,212 +1443,236 @@ window.setBranch=function(b,el){
 // SECTION 17: EXECUTIVE OVERVIEW DASHBOARD
 // ══════════════════════════════════════════════
 function rOverview(){
-  const fs = filtStaff(), fids = fs.map(s=>s.id);
-  const tod = today(), mon = thisMonth(), prev = prevMonth();
-  const allLogs = arr(DATA.logs);
+  try {
+    const fs = filtStaff(), fids = fs.map(s=>s.id);
+    const tod = today(), mon = thisMonth(), prev = prevMonth();
+    const allLogs = arr(DATA.logs);
 
-  const ml = allLogs.filter(l=>l.date.startsWith(mon) && (activeBranch==='ALL'||fids.includes(l.staffId)));
-  const pl = allLogs.filter(l=>l.date.startsWith(prev) && (activeBranch==='ALL'||fids.includes(l.staffId)));
-  const tl = allLogs.filter(l=>l.date===tod && (activeBranch==='ALL'||fids.includes(l.staffId)));
-  const tt = tl.reduce((a,l)=>a+l.price,0);
-  const pend = arr(DATA.leaves).filter(l=>l.status==='pending').length;
+    const ml = allLogs.filter(l=>l.date && l.date.startsWith(mon) && (activeBranch==='ALL'||fids.includes(l.staffId)));
+    const pl = allLogs.filter(l=>l.date && l.date.startsWith(prev) && (activeBranch==='ALL'||fids.includes(l.staffId)));
+    const tl = allLogs.filter(l=>l.date===tod && (activeBranch==='ALL'||fids.includes(l.staffId)));
+    const tt = tl.reduce((a,l)=>a+(l.price||0),0);
+    const pend = arr(DATA.leaves).filter(l=>l.status==='pending').length;
 
-  // ── KPI computations ──
-  const totalRev = ml.reduce((a,l)=>a+l.price,0);
-  const prevRev = pl.reduce((a,l)=>a+l.price,0);
-  const growth = prevRev>0 ? Math.round(((totalRev-prevRev)/prevRev)*100) : null;
-  const totalClients = ml.length;
-  const avgBill = totalClients>0 ? Math.round(totalRev/totalClients) : 0;
+    // KPI computations
+    const totalRev = ml.reduce((a,l)=>a+(l.price||0),0);
+    const prevRev = pl.reduce((a,l)=>a+(l.price||0),0);
+    const growth = prevRev>0 ? Math.round(((totalRev-prevRev)/prevRev)*100) : null;
+    const totalClients = ml.length;
+    const avgBill = totalClients>0 ? Math.round(totalRev/totalClients) : 0;
 
-  // Total incentives (per-staff rate)
-  let totalInc = 0;
-  fs.forEach(s=>{
-    const sSales = ml.filter(l=>l.staffId===s.id).reduce((a,l)=>a+l.price,0);
-    const sLogs = ml.filter(l=>l.staffId===s.id);
-    const bd = {};
-    sLogs.forEach(l=>{ if(!bd[l.date]) bd[l.date]=0; bd[l.date]+=l.price; });
-    const sTgt = Object.keys(bd).reduce((a,d)=>a+getTarget(s.id,d),0);
-    if(sSales > sTgt) totalInc += (sSales - sTgt) * getIncRate(s);
-  });
-
-  // Target achievement %
-  let aggSales=0, aggTargets=0;
-  fs.forEach(s=>{
-    aggSales += ml.filter(l=>l.staffId===s.id).reduce((a,l)=>a+l.price,0);
-    aggTargets += (s.defaultTarget||0) * 26;
-  });
-  const targetPct = aggTargets>0 ? Math.round((aggSales/aggTargets)*100) : 0;
-
-  // Attendance %
-  let totalP=0, totalWD=0;
-  fs.forEach(s=>{
-    const sm = calcAttSummary(s.id, mon);
-    totalP += sm.present; totalWD += sm.workingDays;
-  });
-  const attPct = totalWD>0 ? Math.round((totalP/totalWD)*100) : 0;
-
-  // Top staff
-  const staffRev = {};
-  ml.forEach(l=>{ if(!staffRev[l.staffId]) staffRev[l.staffId]=0; staffRev[l.staffId]+=l.price; });
-  const topStaffId = Object.entries(staffRev).sort((a,b)=>b[1]-a[1])[0]?.[0];
-  const topStaff = topStaffId ? DATA.staff[topStaffId] : null;
-
-  // Top service by revenue (split price across multi-service logs)
-  const svcMap = {};
-  ml.forEach(l=>{
-    const services = l.services || [];
-    if(!services.length) return;
-    const split = l.price / services.length;
-    services.forEach(sv=>{
-      const k = sv.toLowerCase().trim();
-      if(!svcMap[k]) svcMap[k] = {name:sv, revenue:0, count:0};
-      svcMap[k].revenue += split; svcMap[k].count++;
+    // Total incentives (per-staff rate)
+    let totalInc = 0;
+    fs.forEach(s=>{
+      const sSales = ml.filter(l=>l.staffId===s.id).reduce((a,l)=>a+(l.price||0),0);
+      const sLogs = ml.filter(l=>l.staffId===s.id);
+      const bd = {};
+      sLogs.forEach(l=>{ if(!bd[l.date]) bd[l.date]=0; bd[l.date]+=(l.price||0); });
+      const sTgt = Object.keys(bd).reduce((a,d)=>a+getTarget(s.id,d),0);
+      if(sSales > sTgt) totalInc += (sSales - sTgt) * getIncRate(s);
     });
-  });
-  const topSvc = Object.values(svcMap).sort((a,b)=>b.revenue-a.revenue)[0];
 
-  // Category aggregation (current + previous month)
-  const catRev = {}, prevCatRev = {};
-  const accumCat = (logs, target) => logs.forEach(l=>{
-    const svs = l.services || [];
-    if(!svs.length) return;
-    const split = l.price / svs.length;
-    svs.forEach(sv=>{
-      const c = categorizeService(sv);
-      target[c] = (target[c]||0) + split;
+    // Target achievement %
+    let aggSales=0, aggTargets=0;
+    fs.forEach(s=>{
+      aggSales += ml.filter(l=>l.staffId===s.id).reduce((a,l)=>a+(l.price||0),0);
+      aggTargets += (s.defaultTarget||0) * 26;
     });
-  });
-  accumCat(ml, catRev);
-  accumCat(pl, prevCatRev);
-  const topCat = Object.entries(catRev).sort((a,b)=>b[1]-a[1])[0];
-  let bestCat=null, bestG=-Infinity;
-  Object.entries(catRev).forEach(([c,r])=>{
-    const p = prevCatRev[c]||0;
-    if(p>0){
-      const g = Math.round(((r-p)/p)*100);
-      if(g > bestG){ bestG = g; bestCat = c; }
-    }
-  });
+    const targetPct = aggTargets>0 ? Math.round((aggSales/aggTargets)*100) : 0;
 
-  // Visual helpers
-  const monLabel = new Date(mon+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
-  const targetCls = targetPct>=100?'green':targetPct>=70?'yellow':'red';
-  const attCls = attPct>=85?'green':attPct>=70?'yellow':'red';
-  const growthCls = growth===null?'':growth>=0?'green':'red';
-  const growthText = growth===null?'–':(growth>=0?'+':'')+growth+'%';
+    // Attendance %
+    let totalP=0, totalWD=0;
+    fs.forEach(s=>{
+      const sm = (typeof calcAttSummary === 'function') ? calcAttSummary(s.id, mon) : {present:0, workingDays:0};
+      totalP += sm.present||0; totalWD += sm.workingDays||0;
+    });
+    const attPct = totalWD>0 ? Math.round((totalP/totalWD)*100) : 0;
 
-  oc().innerHTML = `
-  <div class="exec-section-title">📊 Executive Overview · ${monLabel}</div>
-  <div class="exec-grid">
-    <div class="exec-kpi">
-      <div class="exec-kpi-icon">💰</div>
-      <div class="exec-kpi-label">Total Revenue</div>
-      <div class="exec-kpi-value gold">₹${totalRev.toLocaleString('en-IN')}</div>
-      ${growth!==null?`<div class="exec-kpi-sub ${growth>=0?'up':'down'}">${growth>=0?'↑ +':'↓ '}${Math.abs(growth)}% vs last month</div>`:'<div class="exec-kpi-sub">no comparison</div>'}
-    </div>
-    <div class="exec-kpi">
-      <div class="exec-kpi-icon">📊</div>
-      <div class="exec-kpi-label">Revenue Growth</div>
-      <div class="exec-kpi-value ${growthCls}">${growthText}</div>
-      <div class="exec-kpi-sub">month over month</div>
-    </div>
-    <div class="exec-kpi">
-      <div class="exec-kpi-icon">👥</div>
-      <div class="exec-kpi-label">Total Clients</div>
-      <div class="exec-kpi-value">${totalClients}</div>
-      <div class="exec-kpi-sub">entries this month</div>
-    </div>
-    <div class="exec-kpi">
-      <div class="exec-kpi-icon">💳</div>
-      <div class="exec-kpi-label">Avg Bill Value</div>
-      <div class="exec-kpi-value">₹${avgBill.toLocaleString('en-IN')}</div>
-      <div class="exec-kpi-sub">per client</div>
-    </div>
-    <div class="exec-kpi">
-      <div class="exec-kpi-icon">🎯</div>
-      <div class="exec-kpi-label">Target Achieved</div>
-      <div class="exec-kpi-value ${targetCls}">${targetPct}%</div>
-      <div class="exec-kpi-sub">studio-wide</div>
-    </div>
-    <div class="exec-kpi">
-      <div class="exec-kpi-icon">🕐</div>
-      <div class="exec-kpi-label">Attendance</div>
-      <div class="exec-kpi-value ${attCls}">${attPct}%</div>
-      <div class="exec-kpi-sub">working days</div>
-    </div>
-    <div class="exec-kpi">
-      <div class="exec-kpi-icon">🎁</div>
-      <div class="exec-kpi-label">Incentives Earned</div>
-      <div class="exec-kpi-value green">₹${Math.round(totalInc).toLocaleString('en-IN')}</div>
-      <div class="exec-kpi-sub">this month</div>
-    </div>
-    <div class="exec-kpi">
-      <div class="exec-kpi-icon">🥇</div>
-      <div class="exec-kpi-label">Top Staff</div>
-      <div class="exec-kpi-value gold">${topStaff?topStaff.name.split(' ')[0]:'–'}</div>
-      <div class="exec-kpi-sub">${topStaff?'₹'+Math.round(staffRev[topStaffId]).toLocaleString('en-IN'):'no data'}</div>
-    </div>
-    <div class="exec-kpi">
-      <div class="exec-kpi-icon">💅</div>
-      <div class="exec-kpi-label">Top Service</div>
-      <div class="exec-kpi-value gold" style="font-size:.88rem">${topSvc?topSvc.name:'–'}</div>
-      <div class="exec-kpi-sub">${topSvc?'₹'+Math.round(topSvc.revenue).toLocaleString('en-IN'):''}</div>
-    </div>
-    <div class="exec-kpi">
-      <div class="exec-kpi-icon">🗂</div>
-      <div class="exec-kpi-label">Top Category</div>
-      <div class="exec-kpi-value gold">${topCat?topCat[0]:'–'}</div>
-      <div class="exec-kpi-sub">${topCat?'₹'+Math.round(topCat[1]).toLocaleString('en-IN'):''}</div>
-    </div>
-    <div class="exec-kpi">
-      <div class="exec-kpi-icon">📈</div>
-      <div class="exec-kpi-label">Best Growth</div>
-      <div class="exec-kpi-value green">${bestCat||'–'}</div>
-      <div class="exec-kpi-sub up">${bestCat?'+'+bestG+'%':'no comp data'}</div>
-    </div>
-    <div class="exec-kpi">
-      <div class="exec-kpi-icon">📅</div>
-      <div class="exec-kpi-label">Today</div>
-      <div class="exec-kpi-value">₹${tt.toLocaleString('en-IN')}</div>
-      <div class="exec-kpi-sub">${tl.length} entries${pend?' · '+pend+' lvs pending':''}</div>
-    </div>
-  </div>
+    // Top staff
+    const staffRev = {};
+    ml.forEach(l=>{ if(!staffRev[l.staffId]) staffRev[l.staffId]=0; staffRev[l.staffId]+=(l.price||0); });
+    const topStaffEntry = Object.entries(staffRev).sort((a,b)=>b[1]-a[1])[0];
+    const topStaffId = topStaffEntry ? topStaffEntry[0] : null;
+    const topStaff = topStaffId && DATA.staff ? DATA.staff[topStaffId] : null;
 
-  <!-- TODAY'S STAFF PROGRESS -->
-  <div class="sec">
-    <div class="sechdr"><div class="sectitle">👥 Today's Staff Progress</div><span style="font-size:.62rem;color:var(--muted)">${tod}</span></div>
-    <div class="sp-grid" id="spGrid"></div>
-  </div>
+    // Top service by revenue
+    const svcMap = {};
+    ml.forEach(l=>{
+      const services = l.services || [];
+      if(!services.length) return;
+      const split = (l.price||0) / services.length;
+      services.forEach(sv=>{
+        const k = String(sv).toLowerCase().trim();
+        if(!svcMap[k]) svcMap[k] = {name:sv, revenue:0, count:0};
+        svcMap[k].revenue += split; svcMap[k].count++;
+      });
+    });
+    const topSvc = Object.values(svcMap).sort((a,b)=>b.revenue-a.revenue)[0];
 
-  <div style="text-align:right;margin-bottom:10px"><button class="btn bsm bgrn" onclick="exportCSV()">⬇ Export CSV</button></div>
+    // Categories
+    const catRev = {}, prevCatRev = {};
+    const accumCat = function(logs, target){
+      logs.forEach(l=>{
+        const svs = l.services || [];
+        if(!svs.length) return;
+        const split = (l.price||0) / svs.length;
+        svs.forEach(sv=>{
+          const c = (typeof categorizeService === 'function') ? categorizeService(sv) : 'Others';
+          target[c] = (target[c]||0) + split;
+        });
+      });
+    };
+    accumCat(ml, catRev);
+    accumCat(pl, prevCatRev);
+    const topCat = Object.entries(catRev).sort((a,b)=>b[1]-a[1])[0];
+    let bestCat=null, bestG=-Infinity;
+    Object.entries(catRev).forEach(function(entry){
+      const c=entry[0], r=entry[1];
+      const p = prevCatRev[c]||0;
+      if(p>0){
+        const g = Math.round(((r-p)/p)*100);
+        if(g > bestG){ bestG = g; bestCat = c; }
+      }
+    });
 
-  <div class="sec">
-    <div class="sechdr"><div class="sectitle">🧠 Smart Insights</div></div>
-    <div id="insightsContainer"></div>
-  </div>
+    // Pre-compute display strings (no nested template literals)
+    const monLabel = new Date(mon+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+    const targetCls = targetPct>=100?'green':targetPct>=70?'yellow':'red';
+    const attCls = attPct>=85?'green':attPct>=70?'yellow':'red';
+    const growthCls = growth===null?'':growth>=0?'green':'red';
+    const growthText = growth===null?'–':(growth>=0?'+':'')+growth+'%';
 
-  <div class="sec">
-    <div class="sechdr"><div class="sectitle">📈 Revenue — Last 7 Days</div></div>
-    <div class="chart-wrap"><canvas id="chartRevenue" height="130"></canvas></div>
-  </div>
+    let growthBadge;
+    if(growth===null) growthBadge = '<div class="exec-kpi-sub">no comparison</div>';
+    else if(growth>=0) growthBadge = '<div class="exec-kpi-sub up">↑ +'+growth+'% vs last month</div>';
+    else growthBadge = '<div class="exec-kpi-sub down">↓ '+Math.abs(growth)+'% vs last month</div>';
 
-  <div class="sec">
-    <div class="sechdr"><div class="sectitle">🏢 Branch Comparison</div></div>
-    <div class="chart-wrap"><canvas id="chartBranch" height="110"></canvas></div>
-  </div>
+    const topStaffName = topStaff ? topStaff.name.split(' ')[0] : '–';
+    const topStaffSub = topStaff ? '₹'+Math.round(staffRev[topStaffId]).toLocaleString('en-IN') : 'no data';
+    const topSvcName = topSvc ? topSvc.name : '–';
+    const topSvcSub = topSvc ? '₹'+Math.round(topSvc.revenue).toLocaleString('en-IN') : '';
+    const topCatName = topCat ? topCat[0] : '–';
+    const topCatSub = topCat ? '₹'+Math.round(topCat[1]).toLocaleString('en-IN') : '';
+    const bestCatName = bestCat || '–';
+    const bestCatSub = bestCat ? '+'+bestG+'%' : 'no comp data';
+    const todaySub = tl.length + ' entries' + (pend ? ' · '+pend+' lvs pending' : '');
 
-  <div class="sec">
-    <div class="sechdr"><div class="sectitle">👥 Staff Performance (This Month)</div></div>
-    <div class="chart-wrap"><canvas id="chartStaff" height="130"></canvas></div>
-  </div>
+    oc().innerHTML = `
+    <div class="exec-section-title">📊 Executive Overview · ${monLabel}</div>
+    <div class="exec-grid">
+      <div class="exec-kpi">
+        <div class="exec-kpi-icon">💰</div>
+        <div class="exec-kpi-label">Total Revenue</div>
+        <div class="exec-kpi-value gold">₹${totalRev.toLocaleString('en-IN')}</div>
+        ${growthBadge}
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-icon">📊</div>
+        <div class="exec-kpi-label">Revenue Growth</div>
+        <div class="exec-kpi-value ${growthCls}">${growthText}</div>
+        <div class="exec-kpi-sub">month over month</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-icon">👥</div>
+        <div class="exec-kpi-label">Total Clients</div>
+        <div class="exec-kpi-value">${totalClients}</div>
+        <div class="exec-kpi-sub">entries this month</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-icon">💳</div>
+        <div class="exec-kpi-label">Avg Bill Value</div>
+        <div class="exec-kpi-value">₹${avgBill.toLocaleString('en-IN')}</div>
+        <div class="exec-kpi-sub">per client</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-icon">🎯</div>
+        <div class="exec-kpi-label">Target Achieved</div>
+        <div class="exec-kpi-value ${targetCls}">${targetPct}%</div>
+        <div class="exec-kpi-sub">studio-wide</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-icon">🕐</div>
+        <div class="exec-kpi-label">Attendance</div>
+        <div class="exec-kpi-value ${attCls}">${attPct}%</div>
+        <div class="exec-kpi-sub">working days</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-icon">🎁</div>
+        <div class="exec-kpi-label">Incentives Earned</div>
+        <div class="exec-kpi-value green">₹${Math.round(totalInc).toLocaleString('en-IN')}</div>
+        <div class="exec-kpi-sub">this month</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-icon">🥇</div>
+        <div class="exec-kpi-label">Top Staff</div>
+        <div class="exec-kpi-value gold">${topStaffName}</div>
+        <div class="exec-kpi-sub">${topStaffSub}</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-icon">💅</div>
+        <div class="exec-kpi-label">Top Service</div>
+        <div class="exec-kpi-value gold" style="font-size:.88rem">${topSvcName}</div>
+        <div class="exec-kpi-sub">${topSvcSub}</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-icon">🗂</div>
+        <div class="exec-kpi-label">Top Category</div>
+        <div class="exec-kpi-value gold">${topCatName}</div>
+        <div class="exec-kpi-sub">${topCatSub}</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-icon">📈</div>
+        <div class="exec-kpi-label">Best Growth</div>
+        <div class="exec-kpi-value green">${bestCatName}</div>
+        <div class="exec-kpi-sub up">${bestCatSub}</div>
+      </div>
+      <div class="exec-kpi">
+        <div class="exec-kpi-icon">📅</div>
+        <div class="exec-kpi-label">Today</div>
+        <div class="exec-kpi-value">₹${tt.toLocaleString('en-IN')}</div>
+        <div class="exec-kpi-sub">${todaySub}</div>
+      </div>
+    </div>
 
-  <div class="sec"><div class="sechdr"><div class="sectitle">📅 Today's Summary</div></div>${buildTodaySummary(tl)}</div>`;
+    <div class="sec">
+      <div class="sechdr"><div class="sectitle">👥 Today's Staff Progress</div><span style="font-size:.62rem;color:var(--muted)">${tod}</span></div>
+      <div class="sp-grid" id="spGrid"></div>
+    </div>
 
-  buildInsights(fs, fids, ml, pl, mon);
-  buildTodayStaffProgress(fs, tod);
-  buildRevenueChart();
-  buildBranchChart(mon);
-  buildStaffPerfChart(fs, mon);
+    <div style="text-align:right;margin-bottom:10px"><button class="btn bsm bgrn" onclick="exportCSV()">⬇ Export CSV</button></div>
+
+    <div class="sec">
+      <div class="sechdr"><div class="sectitle">🧠 Smart Insights</div></div>
+      <div id="insightsContainer"></div>
+    </div>
+
+    <div class="sec">
+      <div class="sechdr"><div class="sectitle">📈 Revenue — Last 7 Days</div></div>
+      <div class="chart-wrap"><canvas id="chartRevenue" height="130"></canvas></div>
+    </div>
+
+    <div class="sec">
+      <div class="sechdr"><div class="sectitle">🏢 Branch Comparison</div></div>
+      <div class="chart-wrap"><canvas id="chartBranch" height="110"></canvas></div>
+    </div>
+
+    <div class="sec">
+      <div class="sechdr"><div class="sectitle">👥 Staff Performance (This Month)</div></div>
+      <div class="chart-wrap"><canvas id="chartStaff" height="130"></canvas></div>
+    </div>
+
+    <div class="sec"><div class="sechdr"><div class="sectitle">📅 Today's Summary</div></div>${buildTodaySummary(tl)}</div>`;
+
+    // Build sub-components after DOM insertion (each wrapped to avoid one failure killing others)
+    try { buildInsights(fs, fids, ml, pl, mon); } catch(e){ console.warn('buildInsights:', e); }
+    try { buildTodayStaffProgress(fs, tod); } catch(e){ console.warn('buildTodayStaffProgress:', e); }
+    try { buildRevenueChart(); } catch(e){ console.warn('buildRevenueChart:', e); }
+    try { buildBranchChart(mon); } catch(e){ console.warn('buildBranchChart:', e); }
+    try { buildStaffPerfChart(fs, mon); } catch(e){ console.warn('buildStaffPerfChart:', e); }
+  } catch(err) {
+    console.error('rOverview error:', err);
+    oc().innerHTML = `<div class="sec" style="border-color:var(--red);background:var(--red-bg)"><div class="sechdr"><div class="sectitle" style="color:var(--red)">⚠️ Dashboard Error</div></div><div style="font-size:.75rem;color:var(--red);margin-bottom:6px">${String(err.message||err)}</div><pre style="font-size:.65rem;color:var(--muted);white-space:pre-wrap;background:#fff;padding:8px;border-radius:6px;border:1px solid var(--border);max-height:200px;overflow:auto">${String(err.stack||'')}</pre><button class="btn bsm bpri" onclick="oTab('overview',document.querySelector('#oNav button'))" style="margin-top:10px">Retry</button></div>`;
+  }
 }
 
 // ── Today's Staff Progress builder ──
