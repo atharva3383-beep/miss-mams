@@ -285,6 +285,57 @@ tr:hover td{background:var(--gold-pale)}
 .pcb-title{font-size:.78rem;font-weight:800;color:var(--gold);margin-bottom:10px}
 .pcb-notice{font-size:.64rem;color:var(--muted);margin-top:8px;padding:6px 8px;background:#fff;border-radius:6px;border:1px solid var(--border)}
 
+/* ── SECTION 1: Attendance cards + calendar ── */
+.att-staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:9px;margin-bottom:14px}
+.att-card{background:#fff;border-radius:12px;border:1px solid var(--border);padding:11px 12px;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.att-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(139,105,20,.12)}
+.att-card-top{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.att-card-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-l));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.78rem;flex-shrink:0}
+.att-card-name{font-size:.8rem;font-weight:800;color:var(--dark);line-height:1.1}
+.att-card-sub{font-size:.58rem;color:var(--muted);margin-top:1px}
+.att-card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:7px}
+.att-stat{text-align:center;padding:4px 2px;background:var(--bg);border-radius:6px}
+.att-stat-v{font-size:.86rem;font-weight:900;line-height:1}
+.att-stat-l{font-size:.52rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-top:2px}
+.att-stat.p .att-stat-v{color:var(--green)}
+.att-stat.l .att-stat-v{color:var(--blue)}
+.att-stat.a .att-stat-v{color:var(--red)}
+.att-card-pct{display:flex;justify-content:space-between;align-items:center;font-size:.66rem;font-weight:700}
+.att-pct-bar{flex:1;height:5px;background:var(--border);border-radius:99px;margin:0 7px;overflow:hidden}
+.att-pct-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),#38A169);transition:width .6s ease}
+
+/* Calendar */
+.cal-wrap{padding:8px}
+.cal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.cal-nav{display:flex;align-items:center;gap:8px}
+.cal-nav button{padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;cursor:pointer;font-size:.75rem;font-weight:700}
+.cal-nav button:hover{background:var(--gold-pale)}
+.cal-mon{font-size:.85rem;font-weight:800;color:var(--dark);min-width:120px;text-align:center}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow{font-size:.6rem;font-weight:800;color:var(--muted);text-transform:uppercase;text-align:center;padding:5px 0}
+.cal-day{aspect-ratio:1;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.74rem;font-weight:700;border:1.5px solid transparent;cursor:default;position:relative}
+.cal-day.blank{visibility:hidden}
+.cal-day.future{color:var(--muted);background:transparent}
+.cal-day.present{background:var(--green-bg);color:var(--green);border-color:#6EE7A0}
+.cal-day.leave{background:var(--blue-bg);color:var(--blue);border-color:#93C5FD}
+.cal-day.absent{background:var(--red-bg);color:var(--red);border-color:#fca5a5}
+.cal-day.weekend{background:var(--bg);color:var(--muted)}
+.cal-day-num{font-size:.78rem;font-weight:800;line-height:1}
+.cal-day-dot{width:5px;height:5px;border-radius:50%;margin-top:2px}
+.cal-day.present .cal-day-dot{background:var(--green)}
+.cal-day.leave .cal-day-dot{background:var(--blue)}
+.cal-day.absent .cal-day-dot{background:var(--red)}
+.cal-legend{display:flex;gap:10px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.cal-leg{display:flex;align-items:center;gap:4px;font-size:.65rem;color:var(--muted)}
+.cal-leg-box{width:11px;height:11px;border-radius:3px}
+.cal-leg-box.p{background:var(--green-bg);border:1.5px solid #6EE7A0}
+.cal-leg-box.l{background:var(--blue-bg);border:1.5px solid #93C5FD}
+.cal-leg-box.a{background:var(--red-bg);border:1.5px solid #fca5a5}
+.profile-records{margin-top:14px}
+.profile-rec{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:var(--bg);border-radius:8px;margin-bottom:5px;font-size:.74rem;border:1px solid var(--border)}
+.profile-rec-date{font-weight:700;color:var(--dark)}
+.profile-rec-times{color:var(--muted);font-size:.66rem}
+
 /* TOAST */
 .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--gold-l));color:#fff;padding:9px 18px;border-radius:10px;font-size:.78rem;font-weight:700;z-index:9999;white-space:nowrap;max-width:92vw;text-align:center;animation:su .2s ease;box-shadow:0 4px 14px rgba(139,105,20,.4)}
 .tr{background:linear-gradient(135deg,#C0392B,#E74C3C)!important}
@@ -292,6 +343,59 @@ tr:hover td{background:var(--gold-pale)}
 
 /* Animated counter */
 .count-anim{display:inline-block;transition:all .3s}
+
+/* ── SECTION 17: Executive KPI Grid ── */
+.exec-section-title{font-size:.92rem;font-weight:800;color:var(--dark);margin:2px 0 9px;display:flex;align-items:center;gap:6px}
+.exec-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px}
+.exec-kpi{background:#fff;border-radius:11px;padding:11px 12px;border:1px solid var(--border);position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}
+.exec-kpi:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(139,105,20,.12)}
+.exec-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold-l))}
+.exec-kpi-icon{font-size:1.05rem;margin-bottom:2px}
+.exec-kpi-label{font-size:.58rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.exec-kpi-value{font-size:1.05rem;font-weight:900;color:var(--dark);margin-top:3px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.exec-kpi-value.gold{color:var(--gold)}
+.exec-kpi-value.green{color:var(--green)}
+.exec-kpi-value.red{color:var(--red)}
+.exec-kpi-value.yellow{color:var(--yellow)}
+.exec-kpi-sub{font-size:.6rem;color:var(--muted);margin-top:2px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exec-kpi-sub.up{color:var(--green)}
+.exec-kpi-sub.down{color:var(--red)}
+
+/* ── SECTION 2: Staff Performance Profile modal ── */
+.sp-tabs{display:flex;gap:5px;margin-bottom:12px;background:var(--bg);padding:3px;border-radius:8px}
+.sp-tab{flex:1;padding:7px 4px;border:none;background:transparent;border-radius:6px;cursor:pointer;font-size:.7rem;font-weight:700;color:var(--muted);transition:all .15s}
+.sp-tab.active{background:#fff;color:var(--gold);box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.sp-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:7px;margin-bottom:12px}
+.sp-kpi{background:var(--bg);border-radius:9px;padding:9px;text-align:center;border:1px solid var(--border)}
+.sp-kpi-l{font-size:.56rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.sp-kpi-v{font-size:1rem;font-weight:900;margin-top:3px;line-height:1.1}
+.sp-trend{margin-top:10px;padding:10px;background:var(--bg);border-radius:9px;border:1px solid var(--border)}
+.sp-trend-title{font-size:.65rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:6px}
+.sp-trend canvas{max-height:160px}
+
+/* ── SECTION 4: Logs cards + drill-down ── */
+.logs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:9px;margin-bottom:10px}
+.logs-card{background:#fff;border-radius:11px;border:1px solid var(--border);padding:11px 12px;cursor:pointer;transition:transform .12s,box-shadow .12s}
+.logs-card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(139,105,20,.12)}
+.logs-card-top{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.logs-card-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-l));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.78rem;flex-shrink:0}
+.logs-card-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.logs-card-stat{background:var(--bg);border-radius:7px;padding:5px 7px;text-align:center}
+.logs-card-stat-v{font-size:.86rem;font-weight:900;color:var(--gold)}
+.logs-card-stat-l{font-size:.55rem;color:var(--muted);font-weight:700;text-transform:uppercase}
+.logs-search-bar{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap}
+.logs-search-bar input,.logs-search-bar select{padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.78rem;outline:none;background:#fff}
+.logs-search-bar input[type=text]{flex:1;min-width:120px}
+.logs-search-bar input:focus,.logs-search-bar select:focus{border-color:var(--gold)}
+.logs-list{max-height:50vh;overflow-y:auto;margin-bottom:6px}
+.logs-row{display:flex;align-items:center;padding:8px 10px;background:var(--bg);border-radius:8px;margin-bottom:5px;border:1px solid var(--border)}
+.logs-row-left{flex:1;min-width:0}
+.logs-row-date{font-size:.6rem;color:var(--muted);font-weight:700}
+.logs-row-svc{font-weight:700;color:var(--dark);margin-top:2px;font-size:.73rem;overflow:hidden;text-overflow:ellipsis}
+.logs-row-price{font-size:.86rem;font-weight:900;color:var(--gold);margin-left:8px;flex-shrink:0}
+.logs-empty{text-align:center;padding:18px;color:var(--muted);font-size:.78rem}
+.logs-summary-bar{background:var(--gold-pale);border-radius:8px;padding:8px 10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;font-size:.74rem;border:1px solid var(--gold-border)}
+
 </style>
 </head>
 <body>
@@ -479,21 +583,12 @@ tr:hover td{background:var(--gold-pale)}
     <div class="frow"><label class="flbl">Role</label><input class="finp" id="sfRole"></div>
     <div class="frow"><label class="flbl">Fixed Salary (₹)</label><input class="finp" type="number" id="sfSalary"></div>
     <div class="frow"><label class="flbl">Daily Target (₹)</label><input class="finp" type="number" id="sfTarget"></div>
+    <div class="frow"><label class="flbl">Incentive %</label><input class="finp" type="number" id="sfIncPct" placeholder="5" min="0" max="100" step="0.5"></div>
     <div class="frow"><label class="flbl">Base Time In</label><input class="finp" type="time" id="sfIn" value="10:00"></div>
     <div class="frow"><label class="flbl">Base Time Out</label><input class="finp" type="time" id="sfOut" value="20:30"></div>
     <div class="frow"><label class="flbl">PIN (4-digit)</label><input class="finp" type="tel" maxlength="4" id="sfPin" placeholder="e.g. 1234"></div>
   </div>
   <div class="macts"><button class="btn bsm" onclick="closeM('staffModal')">Cancel</button><button class="btn bsm bpri" onclick="saveStaff()">Save</button></div>
-</div></div>
-
-<div class="mbg" id="targetModal"><div class="msh">
-  <div class="drag"></div><div class="mtitle">🎯 Target Override</div>
-  <div class="fg2">
-    <div class="frow"><label class="flbl">Staff</label><select class="finp" id="tStaff"></select></div>
-    <div class="frow"><label class="flbl">Date</label><input class="finp" type="date" id="tDate"></div>
-    <div class="frow"><label class="flbl">Target (₹)</label><input class="finp" type="number" id="tAmt"></div>
-  </div>
-  <div class="macts"><button class="btn bsm" onclick="closeM('targetModal')">Cancel</button><button class="btn bsm bpri" onclick="saveTarget()">Save</button></div>
 </div></div>
 
 <div class="mbg" id="discModal"><div class="msh">
@@ -505,20 +600,6 @@ tr:hover td{background:var(--gold-pale)}
     <div class="frow"><label class="flbl">Note</label><input class="finp" id="dNote" placeholder="Optional"></div>
   </div>
   <div class="macts"><button class="btn bsm" onclick="closeM('discModal')">Cancel</button><button class="btn bsm bpri" onclick="saveDisc()">Save</button></div>
-</div></div>
-
-<div class="mbg" id="fbkModal"><div class="msh">
-  <div class="drag"></div><div class="mtitle">⭐ Give Feedback</div>
-  <div id="fbFor" style="font-size:.83rem;font-weight:700;color:var(--dark);margin-bottom:10px"></div>
-  <div class="frow"><label class="flbl">Date</label><input class="finp" type="date" id="fbDate"></div>
-  <div class="frow" style="margin-top:8px"><label class="flbl">Stars</label>
-    <div class="stars" id="starRow">
-      <span class="star" onclick="setStar(1)">☆</span><span class="star" onclick="setStar(2)">☆</span>
-      <span class="star" onclick="setStar(3)">☆</span><span class="star" onclick="setStar(4)">☆</span><span class="star" onclick="setStar(5)">☆</span>
-    </div>
-  </div>
-  <div class="frow" style="margin-top:8px"><label class="flbl">Note</label><input class="finp" id="fbNote" placeholder="Optional"></div>
-  <div class="macts"><button class="btn bsm" onclick="closeM('fbkModal')">Cancel</button><button class="btn bsm bpri" onclick="saveFbk()">Save</button></div>
 </div></div>
 
 <div class="mbg" id="bigModal"><div class="msh" style="max-height:88vh">
@@ -561,32 +642,73 @@ const db = firebase.database();
 // ══════════════════════════════════════════════
 const DEFAULT_OWNER_PIN = '0000';
 const LEAVE_LIMIT = 4;
-const SVCS = ['Cleanup','Face Wax','Facial','Hair Colour','Hair Spa','Haircut','Hairwash','Hand Wax','Half Leg Wax','Manicure','Pedicure','Threadwork','Upperlip'];
+const SVCS = [
+  // Hair
+  'Haircut','Hairwash','Hair Spa','Hair Colour','Hair Styling','Highlights','Keratin','Smoothening',
+  // Skin
+  'Cleanup','Facial','D-Tan','Hydra Facial','Bleach',
+  // Makeup
+  'Bridal Makeup','Engagement Makeup','Party Makeup','HD Makeup','Airbrush Makeup',
+  // Nails
+  'Manicure','Pedicure','Nail Art','Gel Nails','Nail Extensions',
+  // Beauty & Grooming
+  'Face Wax','Hand Wax','Half Leg Wax','Threadwork','Upperlip','Body Polishing','Head Massage'
+];
 
-// Default tab order
+// Default tab order — Targets & Feedback removed
 const DEFAULT_TABS = [
   {id:'overview',label:'📊 Overview'},
   {id:'alerts',label:'🔔 Alerts'},
   {id:'staff',label:'👥 Staff'},
   {id:'logs',label:'📋 Logs'},
   {id:'attend',label:'🕐 Attend.'},
-  {id:'targets',label:'🎯 Targets'},
   {id:'rank',label:'🏆 Rank'},
   {id:'leaves',label:'🌴 Leaves'},
   {id:'monthly',label:'📈 Monthly'},
   {id:'salary',label:'💰 Salary'},
   {id:'services',label:'💅 Services'},
-  {id:'feedback',label:'⭐ Feedback'},
+  {id:'categories',label:'🗂 Categories'},
   {id:'settings',label:'⚙️ Settings'}
 ];
+
+// ── SECTION 11: Service Categorization ──
+const CATEGORY_MAP = {
+  'Hair': ['haircut','hair wash','hairwash','hair spa','hair color','hair colour','hair styling','highlights','keratin','smoothening','rebonding','hair treatment','hair treatments'],
+  'Skin': ['facial','cleanup','d-tan','dtan','hydra facial','hydrafacial','bleach','skin treatment','skin treatments'],
+  'Makeup': ['bridal makeup','engagement makeup','party makeup','hd makeup','airbrush makeup','makeup'],
+  'Nails': ['nail extension','nail extensions','nail art','gel nails','nail refill','nail treatment','nail treatments','manicure','pedicure'],
+  'Beauty & Grooming': ['waxing','wax','threading','threadwork','body polishing','head massage','face wax','hand wax','half leg wax','full leg wax','upperlip','upper lip']
+};
+// Display priority order for category UIs
+const CATEGORY_ORDER = ['Makeup','Hair','Skin','Nails','Beauty & Grooming','Others'];
+
+function categorizeService(svcName){
+  if(!svcName) return 'Others';
+  // Check user overrides first (stored in settings)
+  const overrides = (DATA.settings && DATA.settings.categoryOverrides) || {};
+  const key = svcName.toLowerCase().trim();
+  if(overrides[key]) return overrides[key];
+  for(const [cat, keywords] of Object.entries(CATEGORY_MAP)){
+    if(keywords.some(k => key.includes(k))) return cat;
+  }
+  return 'Others';
+}
+
+function setCategoryOverride(svcName, category){
+  const settings = DATA.settings || {};
+  const config = settings.config || {};
+  const overrides = settings.categoryOverrides || {};
+  overrides[svcName.toLowerCase().trim()] = category;
+  return fbRef('settings/categoryOverrides').set(overrides);
+}
 
 // ══════════════════════════════════════════════
 // LOCAL STATE
 // ══════════════════════════════════════════════
-let DATA = { staff:{}, logs:{}, attend:{}, targets:{}, leaves:{}, disc:{}, feedback:{}, settings:{} };
+let DATA = { staff:{}, logs:{}, attend:{}, leaves:{}, disc:{}, settings:{} };
 let session = {role:null, staffId:null};
 let loginMode='staff', pinTarget=null, pinBuf='', wrongAttempts=0, locked=false, lockTimer=null;
-let editEntryId=null, selSvcs=[], editSvcs=[], fbkStaffId=null, oStar=0;
+let editEntryId=null, selSvcs=[], editSvcs=[];
 let activeBranch='ALL', curOTab='overview';
 let feedIdx=0, feedTmr=null, editSid=null;
 let appReady = false;
@@ -741,7 +863,7 @@ function filtStaff(){ const s=arrStaff(); return activeBranch==='ALL'?s:s.filter
 window.addEventListener('load', ()=>{
   loadTabOrder();
   document.getElementById('loadStatus').textContent = 'Connecting to Firebase...';
-  const paths = ['staff','logs','attend','targets','leaves','disc','feedback','settings'];
+  const paths = ['staff','logs','attend','leaves','disc','settings'];
   let loaded = 0;
 
   paths.forEach(p=>{
@@ -784,9 +906,9 @@ function isAnyModalOpen(){
 function refreshOwnerTab(){
   const fns={
     overview:rOverview, alerts:rAlerts, staff:rStaff, logs:rLogs,
-    attend:rAttend, targets:rTargets, rank:rRank, leaves:rLeaves,
-    monthly:rMonthly, salary:rSalary, services:rServices, feedback:rFeedback,
-    settings:rSettings
+    attend:rAttend, rank:rRank, leaves:rLeaves,
+    monthly:rMonthly, salary:rSalary, services:rServices,
+    categories:rCategories, settings:rSettings
   };
   fns[curOTab]?.();
 }
@@ -804,7 +926,17 @@ function toMins(t){ if(!t)return 0; const[h,m]=t.split(':').map(Number); return 
 function calcOT(tout,base='20:30'){ const d=(toMins(tout)-toMins(base))/60; return d>0?d:0; }
 function isHalfDay(tin,tout){ if(!tin||!tout)return false; const h=(toMins(tout)-toMins(tin))/60; return toMins(tin)>toMins('13:00')||toMins(tout)<toMins('16:00')||h<6; }
 function lateMins(tin,base='10:00'){ const d=toMins(tin)-toMins(base); return d>0?d:0; }
-function getTarget(sid,date){ const ov=DATA.targets&&Object.values(DATA.targets).find(t=>t.staffId===sid&&t.date===date); if(ov)return ov.amount; const s=DATA.staff&&DATA.staff[sid]; return s?.defaultTarget||0; }
+// Helper: get a staff member's incentive rate as decimal (default 5%)
+function getIncRate(s){
+  const pct = (s && s.incentivePct != null) ? s.incentivePct : 5;
+  return pct / 100;
+}
+
+// Target is now only the default daily target (no per-date overrides)
+function getTarget(sid, date){
+  const s = DATA.staff && DATA.staff[sid];
+  return s?.defaultTarget || 0;
+}
 function starsH(n){ return '★'.repeat(n)+'☆'.repeat(5-n); }
 function show(id){ document.getElementById(id).classList.remove('hidden'); }
 function hide(id){ document.getElementById(id).classList.add('hidden'); }
@@ -1086,14 +1218,16 @@ function refreshStaff(){
   const total=logs.reduce((a,l)=>a+l.price,0);
   const target=getTarget(sid,tod);
   const rem=Math.max(0,target-total);
-  const inc=total>target?Math.round((total-target)*.05):0;
+  const staff = DATA.staff && DATA.staff[sid];
+  const incRate = getIncRate(staff);
+  const inc=total>target?Math.round((total-target)*incRate):0;
 
   document.getElementById('sTarget').textContent=target?'₹'+(target/1000).toFixed(1)+'K':'–';
   document.getElementById('sSales').textContent='₹'+(total/1000).toFixed(1)+'K';
   document.getElementById('sLeft').textContent=rem>0?'₹'+rem.toLocaleString('en-IN'):'✓ Done!';
   document.getElementById('sLeft').style.color=rem>0?'var(--red)':'var(--green)';
   document.getElementById('sInc').textContent='₹'+inc.toLocaleString('en-IN');
-  document.getElementById('sNudge').textContent=total>=target?'Target hit! 🎉':target>0?`₹${rem.toLocaleString('en-IN')} more = +₹${Math.round(rem*.05)}`:`${logs.length} clients today`;
+  document.getElementById('sNudge').textContent=total>=target?'Target hit! 🎉':target>0?`₹${rem.toLocaleString('en-IN')} more = +₹${Math.round(rem*incRate)}`:`${logs.length} clients today`;
   document.getElementById('eCount').textContent=logs.length;
   document.getElementById('eTotal').textContent='₹'+total.toLocaleString('en-IN');
 
@@ -1306,74 +1440,190 @@ window.setBranch=function(b,el){
 };
 
 // ══════════════════════════════════════════════
-// PRIORITY 3 & 5: Overview with Charts + Insights
+// SECTION 17: EXECUTIVE OVERVIEW DASHBOARD
 // ══════════════════════════════════════════════
 function rOverview(){
-  const fs=filtStaff(),fids=fs.map(s=>s.id);
-  const tod=today(),mon=thisMonth(),prev=prevMonth();
-  const tl=arr(DATA.logs).filter(l=>l.date===tod&&(activeBranch==='ALL'||fids.includes(l.staffId)));
-  const ml=arr(DATA.logs).filter(l=>l.date.startsWith(mon)&&(activeBranch==='ALL'||fids.includes(l.staffId)));
-  const pl=arr(DATA.logs).filter(l=>l.date.startsWith(prev)&&(activeBranch==='ALL'||fids.includes(l.staffId)));
-  const tt=tl.reduce((a,l)=>a+l.price,0),mt=ml.reduce((a,l)=>a+l.price,0),pt=pl.reduce((a,l)=>a+l.price,0);
-  const sg=pt>0?Math.round(((mt-pt)/pt)*100):null;
-  const pend=arr(DATA.leaves).filter(l=>l.status==='pending').length;
-  let inc=0;
-  fs.forEach(s=>{
-    const s2=ml.filter(l=>l.staffId===s.id).reduce((a,l)=>a+l.price,0);
-    const bd={};ml.filter(l=>l.staffId===s.id).forEach(l=>{if(!bd[l.date])bd[l.date]=0;bd[l.date]+=l.price;});
-    const tg=Object.keys(bd).reduce((a,d)=>a+getTarget(s.id,d),0);
-    if(s2>tg)inc+=(s2-tg)*.05;
-  });
-  const gh=p=>p===null?'':p>=0?`<div style="font-size:.62rem;color:var(--green);font-weight:700">↑ +${p}%</div>`:`<div style="font-size:.62rem;color:var(--red);font-weight:700">↓ ${p}%</div>`;
+  // Show immediate loading state so screen is never blank
+  oc().innerHTML = '<div style="padding:30px;text-align:center;color:var(--muted);font-size:.85rem">Loading dashboard…</div>';
 
-  oc().innerHTML=`
-  <div class="cards">
-    <div class="scard"><div class="sci">💰</div><div class="scl">Today</div><div class="scv">₹${tt.toLocaleString('en-IN')}</div><div class="scs">${tl.length} entries</div></div>
-    <div class="scard"><div class="sci">📅</div><div class="scl">This Month</div><div class="scv">₹${(mt/1000).toFixed(1)}K</div>${gh(sg)}</div>
-    <div class="scard"><div class="sci">👥</div><div class="scl">Staff</div><div class="scv">${fs.length}</div></div>
-    <div class="scard"><div class="sci">🎁</div><div class="scl">Incentives</div><div class="scv" style="color:var(--green)">₹${Math.round(inc).toLocaleString('en-IN')}</div></div>
-    <div class="scard"><div class="sci">🌴</div><div class="scl">Pending Lvs</div><div class="scv" style="color:${pend?'var(--red)':'var(--green)'}">${pend}</div></div>
-  </div>
+  try {
+    const fs = filtStaff();
+    const fids = fs.map(function(s){return s.id;});
+    const tod = today();
+    const mon = thisMonth();
+    const prev = prevMonth();
+    const allLogs = arr(DATA.logs);
 
-  <!-- TODAY'S STAFF PROGRESS -->
-  <div class="sec">
-    <div class="sechdr"><div class="sectitle">👥 Today's Staff Progress</div><span style="font-size:.62rem;color:var(--muted)">${tod}</span></div>
-    <div class="sp-grid" id="spGrid"></div>
-  </div>
+    const inBranch = function(l){ return activeBranch === 'ALL' || fids.indexOf(l.staffId) !== -1; };
+    const ml = allLogs.filter(function(l){ return l.date && l.date.indexOf(mon) === 0 && inBranch(l); });
+    const pl = allLogs.filter(function(l){ return l.date && l.date.indexOf(prev) === 0 && inBranch(l); });
+    const tl = allLogs.filter(function(l){ return l.date === tod && inBranch(l); });
 
-  <div style="text-align:right;margin-bottom:10px"><button class="btn bsm bgrn" onclick="exportCSV()">⬇ Export CSV</button></div>
+    const tt = tl.reduce(function(a,l){ return a + (l.price||0); }, 0);
+    const totalRev = ml.reduce(function(a,l){ return a + (l.price||0); }, 0);
+    const prevRev = pl.reduce(function(a,l){ return a + (l.price||0); }, 0);
+    const totalClients = ml.length;
+    const avgBill = totalClients > 0 ? Math.round(totalRev/totalClients) : 0;
+    const growth = prevRev > 0 ? Math.round(((totalRev - prevRev)/prevRev)*100) : null;
+    const pend = arr(DATA.leaves).filter(function(l){ return l.status === 'pending'; }).length;
 
-  <!-- PRIORITY 5: Smart Insights -->
-  <div class="sec">
-    <div class="sechdr"><div class="sectitle">🧠 Smart Insights</div></div>
-    <div id="insightsContainer"></div>
-  </div>
+    // Total incentives (per-staff rate)
+    let totalInc = 0;
+    fs.forEach(function(s){
+      const sLogs = ml.filter(function(l){ return l.staffId === s.id; });
+      const sSales = sLogs.reduce(function(a,l){ return a + (l.price||0); }, 0);
+      const bd = {};
+      sLogs.forEach(function(l){ if(!bd[l.date]) bd[l.date]=0; bd[l.date] += (l.price||0); });
+      const sTgt = Object.keys(bd).reduce(function(a,d){ return a + (getTarget(s.id, d) || 0); }, 0);
+      if(sSales > sTgt) totalInc += (sSales - sTgt) * getIncRate(s);
+    });
 
-  <!-- Chart: 7-day revenue trend -->
-  <div class="sec">
-    <div class="sechdr"><div class="sectitle">📈 Revenue — Last 7 Days</div></div>
-    <div class="chart-wrap"><canvas id="chartRevenue" height="130"></canvas></div>
-  </div>
+    // Target achievement %
+    let aggSales = 0, aggTargets = 0;
+    fs.forEach(function(s){
+      aggSales += ml.filter(function(l){ return l.staffId === s.id; }).reduce(function(a,l){ return a + (l.price||0); }, 0);
+      aggTargets += (s.defaultTarget || 0) * 26;
+    });
+    const targetPct = aggTargets > 0 ? Math.round((aggSales/aggTargets)*100) : 0;
 
-  <!-- Chart: Branch comparison -->
-  <div class="sec">
-    <div class="sechdr"><div class="sectitle">🏢 Branch Comparison</div></div>
-    <div class="chart-wrap"><canvas id="chartBranch" height="110"></canvas></div>
-  </div>
+    // Attendance %
+    let totalP = 0, totalWD = 0;
+    if(typeof calcAttSummary === 'function'){
+      fs.forEach(function(s){
+        try {
+          const sm = calcAttSummary(s.id, mon);
+          totalP += sm.present || 0;
+          totalWD += sm.workingDays || 0;
+        } catch(e){ /* skip */ }
+      });
+    }
+    const attPct = totalWD > 0 ? Math.round((totalP/totalWD)*100) : 0;
+    const attDisplay = totalWD > 0 ? (attPct + '%') : '–';
 
-  <!-- Chart: Staff performance top 5 -->
-  <div class="sec">
-    <div class="sechdr"><div class="sectitle">👥 Staff Performance (This Month)</div></div>
-    <div class="chart-wrap"><canvas id="chartStaff" height="130"></canvas></div>
-  </div>
+    // Top staff
+    const staffRev = {};
+    ml.forEach(function(l){
+      if(!staffRev[l.staffId]) staffRev[l.staffId] = 0;
+      staffRev[l.staffId] += (l.price||0);
+    });
+    const sortedStaff = Object.keys(staffRev).map(function(k){ return [k, staffRev[k]]; }).sort(function(a,b){ return b[1] - a[1]; });
+    const topStaffId = sortedStaff.length > 0 ? sortedStaff[0][0] : null;
+    const topStaff = (topStaffId && DATA.staff) ? DATA.staff[topStaffId] : null;
 
-  <div class="sec"><div class="sechdr"><div class="sectitle">📅 Today</div></div>${buildTodaySummary(tl)}</div>`;
+    // Top service by revenue
+    const svcMap = {};
+    ml.forEach(function(l){
+      const services = l.services || [];
+      if(services.length === 0) return;
+      const split = (l.price||0) / services.length;
+      services.forEach(function(sv){
+        const k = String(sv).toLowerCase().trim();
+        if(!svcMap[k]) svcMap[k] = { name: sv, revenue: 0, count: 0 };
+        svcMap[k].revenue += split;
+        svcMap[k].count++;
+      });
+    });
+    const svcArr = Object.keys(svcMap).map(function(k){ return svcMap[k]; }).sort(function(a,b){ return b.revenue - a.revenue; });
+    const topSvc = svcArr.length > 0 ? svcArr[0] : null;
 
-  buildInsights(fs,fids,ml,pl,mon);
-  buildTodayStaffProgress(fs, tod);
-  buildRevenueChart();
-  buildBranchChart(mon);
-  buildStaffPerfChart(fs,mon);
+    // Categories
+    const catRev = {}, prevCatRev = {};
+    const catFn = (typeof categorizeService === 'function') ? categorizeService : function(){ return 'Others'; };
+    const accumCat = function(logs, target){
+      logs.forEach(function(l){
+        const svs = l.services || [];
+        if(svs.length === 0) return;
+        const split = (l.price||0) / svs.length;
+        svs.forEach(function(sv){
+          const c = catFn(sv);
+          target[c] = (target[c]||0) + split;
+        });
+      });
+    };
+    accumCat(ml, catRev);
+    accumCat(pl, prevCatRev);
+    const catArr = Object.keys(catRev).map(function(k){ return [k, catRev[k]]; }).sort(function(a,b){ return b[1] - a[1]; });
+    const topCat = catArr.length > 0 ? catArr[0] : null;
+    let bestCat = null, bestG = -Infinity;
+    Object.keys(catRev).forEach(function(c){
+      const r = catRev[c];
+      const p = prevCatRev[c] || 0;
+      if(p > 0){
+        const g = Math.round(((r - p)/p)*100);
+        if(g > bestG){ bestG = g; bestCat = c; }
+      }
+    });
+
+    // Build display strings
+    const monLabel = new Date(mon + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    const targetCls = targetPct >= 100 ? 'green' : targetPct >= 70 ? 'yellow' : 'red';
+    const attCls = attPct >= 85 ? 'green' : attPct >= 70 ? 'yellow' : 'red';
+    const growthCls = growth === null ? '' : growth >= 0 ? 'green' : 'red';
+    const growthText = growth === null ? '–' : ((growth >= 0 ? '+' : '') + growth + '%');
+
+    let growthBadge = '<div class="exec-kpi-sub">no comparison</div>';
+    if(growth !== null){
+      if(growth >= 0) growthBadge = '<div class="exec-kpi-sub up">↑ +' + growth + '% vs last month</div>';
+      else growthBadge = '<div class="exec-kpi-sub down">↓ ' + Math.abs(growth) + '% vs last month</div>';
+    }
+
+    const topStaffName = topStaff ? topStaff.name.split(' ')[0] : '–';
+    const topStaffSub = topStaff ? ('₹' + Math.round(staffRev[topStaffId]).toLocaleString('en-IN')) : 'no data';
+    const topSvcName = topSvc ? topSvc.name : '–';
+    const topSvcSub = topSvc ? ('₹' + Math.round(topSvc.revenue).toLocaleString('en-IN')) : '';
+    const topCatName = topCat ? topCat[0] : '–';
+    const topCatSub = topCat ? ('₹' + Math.round(topCat[1]).toLocaleString('en-IN')) : '';
+    const bestCatName = bestCat || '–';
+    const bestCatSub = bestCat ? ('+' + bestG + '%') : 'no comp data';
+    const todaySub = tl.length + ' entries' + (pend ? (' · ' + pend + ' lvs pending') : '');
+
+    // Build HTML via string concatenation (no nested template literals)
+    let html = '';
+    html += '<div class="exec-section-title">📊 Executive Overview · ' + monLabel + '</div>';
+    html += '<div class="exec-grid">';
+    html += '<div class="exec-kpi"><div class="exec-kpi-icon">💰</div><div class="exec-kpi-label">Total Revenue</div><div class="exec-kpi-value gold">₹' + totalRev.toLocaleString('en-IN') + '</div>' + growthBadge + '</div>';
+    html += '<div class="exec-kpi"><div class="exec-kpi-icon">📊</div><div class="exec-kpi-label">Revenue Growth</div><div class="exec-kpi-value ' + growthCls + '">' + growthText + '</div><div class="exec-kpi-sub">month over month</div></div>';
+    html += '<div class="exec-kpi"><div class="exec-kpi-icon">👥</div><div class="exec-kpi-label">Total Clients</div><div class="exec-kpi-value">' + totalClients + '</div><div class="exec-kpi-sub">entries this month</div></div>';
+    html += '<div class="exec-kpi"><div class="exec-kpi-icon">💳</div><div class="exec-kpi-label">Avg Bill Value</div><div class="exec-kpi-value">₹' + avgBill.toLocaleString('en-IN') + '</div><div class="exec-kpi-sub">per client</div></div>';
+    html += '<div class="exec-kpi"><div class="exec-kpi-icon">🎯</div><div class="exec-kpi-label">Target Achieved</div><div class="exec-kpi-value ' + targetCls + '">' + targetPct + '%</div><div class="exec-kpi-sub">studio-wide</div></div>';
+    html += '<div class="exec-kpi"><div class="exec-kpi-icon">🕐</div><div class="exec-kpi-label">Attendance</div><div class="exec-kpi-value ' + attCls + '">' + attDisplay + '</div><div class="exec-kpi-sub">working days</div></div>';
+    html += '<div class="exec-kpi"><div class="exec-kpi-icon">🎁</div><div class="exec-kpi-label">Incentives Earned</div><div class="exec-kpi-value green">₹' + Math.round(totalInc).toLocaleString('en-IN') + '</div><div class="exec-kpi-sub">this month</div></div>';
+    html += '<div class="exec-kpi"><div class="exec-kpi-icon">🥇</div><div class="exec-kpi-label">Top Staff</div><div class="exec-kpi-value gold">' + topStaffName + '</div><div class="exec-kpi-sub">' + topStaffSub + '</div></div>';
+    html += '<div class="exec-kpi"><div class="exec-kpi-icon">💅</div><div class="exec-kpi-label">Top Service</div><div class="exec-kpi-value gold" style="font-size:.88rem">' + topSvcName + '</div><div class="exec-kpi-sub">' + topSvcSub + '</div></div>';
+    html += '<div class="exec-kpi"><div class="exec-kpi-icon">🗂</div><div class="exec-kpi-label">Top Category</div><div class="exec-kpi-value gold">' + topCatName + '</div><div class="exec-kpi-sub">' + topCatSub + '</div></div>';
+    html += '<div class="exec-kpi"><div class="exec-kpi-icon">📈</div><div class="exec-kpi-label">Best Growth</div><div class="exec-kpi-value green">' + bestCatName + '</div><div class="exec-kpi-sub up">' + bestCatSub + '</div></div>';
+    html += '<div class="exec-kpi"><div class="exec-kpi-icon">📅</div><div class="exec-kpi-label">Today</div><div class="exec-kpi-value">₹' + tt.toLocaleString('en-IN') + '</div><div class="exec-kpi-sub">' + todaySub + '</div></div>';
+    html += '</div>';
+
+    html += '<div class="sec"><div class="sechdr"><div class="sectitle">👥 Today\'s Staff Progress</div><span style="font-size:.62rem;color:var(--muted)">' + tod + '</span></div><div class="sp-grid" id="spGrid"></div></div>';
+    html += '<div style="text-align:right;margin-bottom:10px"><button class="btn bsm bgrn" onclick="exportCSV()">⬇ Export CSV</button></div>';
+    html += '<div class="sec"><div class="sechdr"><div class="sectitle">🧠 Smart Insights</div></div><div id="insightsContainer"></div></div>';
+    html += '<div class="sec"><div class="sechdr"><div class="sectitle">📈 Revenue — Last 7 Days</div></div><div class="chart-wrap"><canvas id="chartRevenue" height="130"></canvas></div></div>';
+    html += '<div class="sec"><div class="sechdr"><div class="sectitle">🏢 Branch Comparison</div></div><div class="chart-wrap"><canvas id="chartBranch" height="110"></canvas></div></div>';
+    html += '<div class="sec"><div class="sechdr"><div class="sectitle">👥 Staff Performance (This Month)</div></div><div class="chart-wrap"><canvas id="chartStaff" height="130"></canvas></div></div>';
+
+    let todaySummaryHTML = '';
+    try { todaySummaryHTML = buildTodaySummary(tl); } catch(e){ todaySummaryHTML = ''; }
+    if(todaySummaryHTML){
+      html += '<div class="sec"><div class="sechdr"><div class="sectitle">📅 Today\'s Summary</div></div>' + todaySummaryHTML + '</div>';
+    }
+
+    // Set the dashboard content
+    oc().innerHTML = html;
+
+    // Build sub-components individually (no single failure kills others)
+    try { if(typeof buildInsights === 'function') buildInsights(fs, fids, ml, pl, mon); } catch(e){ console.warn('buildInsights:', e); }
+    try { if(typeof buildTodayStaffProgress === 'function') buildTodayStaffProgress(fs, tod); } catch(e){ console.warn('buildTodayStaffProgress:', e); }
+    try { if(typeof buildRevenueChart === 'function') buildRevenueChart(); } catch(e){ console.warn('buildRevenueChart:', e); }
+    try { if(typeof buildBranchChart === 'function') buildBranchChart(mon); } catch(e){ console.warn('buildBranchChart:', e); }
+    try { if(typeof buildStaffPerfChart === 'function') buildStaffPerfChart(fs, mon); } catch(e){ console.warn('buildStaffPerfChart:', e); }
+
+  } catch(err) {
+    console.error('rOverview error:', err);
+    const msg = String((err && err.message) || err || 'Unknown error');
+    const stack = String((err && err.stack) || '');
+    oc().innerHTML = '<div class="sec" style="border-color:var(--red);background:var(--red-bg)"><div class="sechdr"><div class="sectitle" style="color:var(--red)">⚠️ Dashboard Error</div></div><div style="font-size:.78rem;color:var(--red);margin-bottom:8px;font-weight:700">' + msg + '</div><pre style="font-size:.65rem;color:var(--muted);white-space:pre-wrap;background:#fff;padding:8px;border-radius:6px;border:1px solid var(--border);max-height:200px;overflow:auto">' + stack + '</pre><button class="btn bsm bpri" onclick="oTab(\'overview\',document.querySelector(\'#oNav button\'))" style="margin-top:10px">Retry</button></div>';
+  }
 }
 
 // ── Today's Staff Progress builder ──
@@ -1612,20 +1862,172 @@ function rAlerts(){
 }
 
 // ══════════════════════════════════════════════
+// SECTION 2: Staff Performance Profile
+// ══════════════════════════════════════════════
+let profileStaffId = null, profileView = 'current'; // 'current' | 'previous' | 'yearly'
+
+window.openStaffProfile = function(sid){
+  profileStaffId = sid;
+  profileView = 'current';
+  renderStaffProfile();
+};
+
+window.setProfileView = function(v){
+  profileView = v;
+  renderStaffProfile();
+};
+
+function renderStaffProfile(){
+  const s = DATA.staff && DATA.staff[profileStaffId];
+  if(!s) return;
+
+  // Resolve period & label
+  let period, periodLabel, isYearly = false;
+  if(profileView === 'current'){
+    period = thisMonth();
+    periodLabel = new Date(period+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  } else if(profileView === 'previous'){
+    period = prevMonth();
+    periodLabel = new Date(period+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  } else {
+    period = String(new Date().getFullYear());
+    periodLabel = `Year ${period}`;
+    isYearly = true;
+  }
+
+  // Filter logs for this staff in this period
+  const logs = arr(DATA.logs).filter(l=>l.staffId===s.id && l.date.startsWith(period));
+  const sales = logs.reduce((a,l)=>a+l.price,0);
+  const clients = logs.length;
+  const services = logs.reduce((a,l)=>a+(l.services?.length||0),0);
+  const avgBill = clients>0 ? Math.round(sales/clients) : 0;
+
+  // Target (monthly: daily target × 26, yearly: × 12 months)
+  const target = (s.defaultTarget||0) * 26 * (isYearly?12:1);
+  const tgtPct = target>0 ? Math.round((sales/target)*100) : 0;
+  const inc = Math.round(Math.max(0, sales - target) * getIncRate(s));
+
+  // Growth (vs prior period)
+  let growth = null;
+  if(profileView === 'current'){
+    const prev = prevMonth();
+    const prevSales = arr(DATA.logs).filter(l=>l.staffId===s.id && l.date.startsWith(prev)).reduce((a,l)=>a+l.price,0);
+    if(prevSales > 0) growth = Math.round(((sales-prevSales)/prevSales)*100);
+  } else if(profileView === 'previous'){
+    const d = new Date(); d.setMonth(d.getMonth()-2);
+    const twoMoBack = d.toISOString().slice(0,7);
+    const tmSales = arr(DATA.logs).filter(l=>l.staffId===s.id && l.date.startsWith(twoMoBack)).reduce((a,l)=>a+l.price,0);
+    if(tmSales > 0) growth = Math.round(((sales-tmSales)/tmSales)*100);
+  } else {
+    // yearly vs last year
+    const prevYear = String(new Date().getFullYear()-1);
+    const pySales = arr(DATA.logs).filter(l=>l.staffId===s.id && l.date.startsWith(prevYear)).reduce((a,l)=>a+l.price,0);
+    if(pySales > 0) growth = Math.round(((sales-pySales)/pySales)*100);
+  }
+
+  // Attendance % (monthly views only)
+  let attPct = null;
+  if(!isYearly){
+    const sm = calcAttSummary(s.id, period);
+    attPct = sm.workingDays>0 ? Math.round((sm.present/sm.workingDays)*100) : 0;
+  }
+
+  // Trend data
+  let trendLabels = [], trendVals = [];
+  if(isYearly){
+    for(let m=1; m<=12; m++){
+      const mm = `${period}-${pad(m)}`;
+      const v = arr(DATA.logs).filter(l=>l.staffId===s.id && l.date.startsWith(mm)).reduce((a,l)=>a+l.price,0);
+      trendLabels.push(new Date(parseInt(period), m-1, 1).toLocaleDateString('en-IN',{month:'short'}));
+      trendVals.push(v);
+    }
+  } else {
+    const [y,m] = period.split('-').map(Number);
+    const daysInMonth = new Date(y, m, 0).getDate();
+    for(let d=1; d<=daysInMonth; d++){
+      const dateStr = `${y}-${pad(m)}-${pad(d)}`;
+      const v = arr(DATA.logs).filter(l=>l.staffId===s.id && l.date===dateStr).reduce((a,l)=>a+l.price,0);
+      trendLabels.push(String(d));
+      trendVals.push(v);
+    }
+  }
+
+  const growthText = growth===null ? '–' : (growth>=0?'+':'')+growth+'%';
+  const growthColor = growth===null ? 'var(--muted)' : growth>=0 ? 'var(--green)' : 'var(--red)';
+
+  const html = `
+    <div class="sp-tabs">
+      <button class="sp-tab ${profileView==='current'?'active':''}" onclick="setProfileView('current')">This Month</button>
+      <button class="sp-tab ${profileView==='previous'?'active':''}" onclick="setProfileView('previous')">Last Month</button>
+      <button class="sp-tab ${profileView==='yearly'?'active':''}" onclick="setProfileView('yearly')">Year ${new Date().getFullYear()}</button>
+    </div>
+    <div style="font-size:.7rem;color:var(--muted);text-align:center;margin-bottom:10px">
+      <b>${s.name}</b> · ${s.branch} · ${periodLabel}
+    </div>
+    <div class="sp-kpi-grid">
+      <div class="sp-kpi"><div class="sp-kpi-l">Revenue</div><div class="sp-kpi-v" style="color:var(--gold)">₹${sales.toLocaleString('en-IN')}</div></div>
+      <div class="sp-kpi"><div class="sp-kpi-l">Clients</div><div class="sp-kpi-v">${clients}</div></div>
+      <div class="sp-kpi"><div class="sp-kpi-l">Services</div><div class="sp-kpi-v">${services}</div></div>
+      <div class="sp-kpi"><div class="sp-kpi-l">Avg Bill</div><div class="sp-kpi-v">₹${avgBill.toLocaleString('en-IN')}</div></div>
+      <div class="sp-kpi"><div class="sp-kpi-l">Target</div><div class="sp-kpi-v">₹${target.toLocaleString('en-IN')}</div></div>
+      <div class="sp-kpi"><div class="sp-kpi-l">Achievement</div><div class="sp-kpi-v" style="color:${tgtPct>=100?'var(--green)':tgtPct>=70?'var(--yellow)':'var(--red)'}">${tgtPct}%</div></div>
+      <div class="sp-kpi"><div class="sp-kpi-l">Incentive</div><div class="sp-kpi-v" style="color:var(--green)">₹${inc.toLocaleString('en-IN')}</div></div>
+      ${attPct!==null?`<div class="sp-kpi"><div class="sp-kpi-l">Attendance</div><div class="sp-kpi-v" style="color:${attPct>=85?'var(--green)':attPct>=70?'var(--yellow)':'var(--red)'}">${attPct}%</div></div>`:''}
+      <div class="sp-kpi"><div class="sp-kpi-l">Growth</div><div class="sp-kpi-v" style="color:${growthColor}">${growthText}</div></div>
+    </div>
+    <div class="sp-trend">
+      <div class="sp-trend-title">Revenue Trend · ${isYearly?'monthly':'daily'}</div>
+      <canvas id="chartProfileTrend"></canvas>
+    </div>
+  `;
+  openBig(`📊 ${s.name.split(' ')[0]} · Performance`, html);
+
+  // Draw trend chart after layout
+  requestAnimationFrame(()=>{
+    makeChart('chartProfileTrend', {
+      type:'line',
+      data:{
+        labels: trendLabels,
+        datasets:[{
+          label:'Revenue',
+          data: trendVals,
+          borderColor:'#C9A84C',
+          backgroundColor:'rgba(201,168,76,.12)',
+          tension:.35, fill:true,
+          pointBackgroundColor:'#8B6914',
+          pointRadius:3, pointHoverRadius:5,
+          borderWidth:2.2
+        }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'₹'+ctx.raw.toLocaleString('en-IN')}}},
+        scales:{
+          y:{ticks:{callback:v=>'₹'+(v/1000).toFixed(0)+'K',font:{size:9}},grid:{color:'rgba(0,0,0,.04)'}},
+          x:{ticks:{font:{size:9},maxRotation:0,autoSkip:true,maxTicksLimit:12},grid:{display:false}}
+        }
+      }
+    });
+  });
+}
+
+// ══════════════════════════════════════════════
 // STAFF TAB
 // ══════════════════════════════════════════════
 function rStaff(){
   const list=filtStaff();
   oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">👥 Staff (${list.length})</div><button class="btn bsm bpri" onclick="openStaffModal()">＋ Add</button></div>
-  <div class="tw"><table><thead><tr><th>Name</th><th>Branch</th><th>Salary</th><th>Target</th><th>PIN</th><th>Act</th></tr></thead>
-  <tbody>${!list.length?'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No staff</td></tr>':
+  <div class="tw"><table><thead><tr><th>Name</th><th>Branch</th><th>Salary</th><th>Target</th><th>Inc%</th><th>PIN</th><th>Actions</th></tr></thead>
+  <tbody>${!list.length?'<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:16px">No staff</td></tr>':
   list.map(s=>`<tr>
     <td><b>${s.name}</b><br><span style="font-size:.62rem;color:var(--muted)">${s.role||''}</span></td>
     <td><span class="badge bgold">${s.branch}</span></td>
     <td>₹${(s.salary||0).toLocaleString('en-IN')}</td>
     <td>₹${(s.defaultTarget||0).toLocaleString('en-IN')}</td>
+    <td><span class="badge bgold">${s.incentivePct!=null?s.incentivePct:5}%</span></td>
     <td><span class="badge ${s.pin?'bg':'br'}">${s.pin||'–'}</span></td>
     <td style="white-space:nowrap">
+      <button class="btn bsm bpri" onclick="openStaffProfile('${s.id}')">📊 Profile</button>
       <button class="btn bsm bedt" onclick="openStaffModal('${s.id}')">Edit</button>
       <button class="btn bsm bdng" onclick="delStaff('${s.id}')">Del</button>
     </td></tr>`).join('')}
@@ -1641,6 +2043,7 @@ window.openStaffModal=function(id){
   document.getElementById('sfRole').value=s?.role||'';
   document.getElementById('sfSalary').value=s?.salary||'';
   document.getElementById('sfTarget').value=s?.defaultTarget||'';
+  document.getElementById('sfIncPct').value=s?.incentivePct!=null?s.incentivePct:5;
   document.getElementById('sfIn').value=s?.baseIn||'10:00';
   document.getElementById('sfOut').value=s?.baseOut||'20:30';
   document.getElementById('sfPin').value=s?.pin||'';
@@ -1653,7 +2056,17 @@ window.saveStaff=function(){
   const pin=document.getElementById('sfPin').value.toString().trim();
   if(!pin||pin.length!==4||!/^\d{4}$/.test(pin)){toast('PIN must be exactly 4 digits','r');return;}
   const id=editSid||('staff_'+uid());
-  const rec={id,name,branch:document.getElementById('sfBranch').value||'MM1',role:document.getElementById('sfRole').value.trim(),salary:parseFloat(document.getElementById('sfSalary').value)||0,defaultTarget:parseFloat(document.getElementById('sfTarget').value)||0,baseIn:document.getElementById('sfIn').value||'10:00',baseOut:document.getElementById('sfOut').value||'20:30',pin};
+  const rec={
+    id,name,
+    branch:document.getElementById('sfBranch').value||'MM1',
+    role:document.getElementById('sfRole').value.trim(),
+    salary:parseFloat(document.getElementById('sfSalary').value)||0,
+    defaultTarget:parseFloat(document.getElementById('sfTarget').value)||0,
+    incentivePct:parseFloat(document.getElementById('sfIncPct').value)||5,
+    baseIn:document.getElementById('sfIn').value||'10:00',
+    baseOut:document.getElementById('sfOut').value||'20:30',
+    pin
+  };
   fbSave('staff',id,rec).then(()=>{
     toast('✅ Staff saved!','g');
     closeM('staffModal');
@@ -1667,38 +2080,373 @@ window.delStaff=function(id){
 };
 
 // ══════════════════════════════════════════════
-// LOGS
+// SECTION 4: LOGS — per-staff cards + drill-down with search/filter/export
 // ══════════════════════════════════════════════
 function rLogs(){
-  const fids=filtStaff().map(s=>s.id);
-  const logs=arr(DATA.logs).filter(l=>activeBranch==='ALL'||fids.includes(l.staffId)).sort((a,b)=>b.date.localeCompare(a.date)||(b.ts||0)-(a.ts||0));
-  oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">📋 Logs (${logs.length})</div><button class="delall" onclick="delAllLogs()">🗑 All</button></div>
-  <div class="tw"><table><thead><tr><th>Date</th><th>Staff</th><th>Service</th><th>Price</th><th>Del</th></tr></thead>
-  <tbody>${!logs.length?'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">No logs</td></tr>':
-  logs.slice(0,100).map(l=>{const s=DATA.staff&&DATA.staff[l.staffId];return`<tr><td>${l.date}</td><td><b>${s?.name||'?'}</b></td><td>${(l.services||[]).join(', ')}</td><td><b>₹${l.price.toLocaleString('en-IN')}</b></td><td><button class="btn bsm bdng" onclick="oDelLog('${l.id}')">✕</button></td></tr>`;}).join('')}
-  </tbody></table></div></div>`;
+  const mon = thisMonth();
+  oc().innerHTML = `<div class="sec">
+    <div class="sechdr">
+      <div class="sectitle">📋 Logs by Staff</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <input type="month" id="logsMonPick" value="${mon}" onchange="rebuildLogsCards(this.value)" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:.73rem;outline:none">
+        <button class="delall" onclick="delAllLogs()">🗑 All</button>
+      </div>
+    </div>
+    <div class="ibox">Tap any staff card to view, search, filter & export their logs.</div>
+    <div class="logs-grid" id="logsGrid"></div>
+  </div>`;
+  rebuildLogsCards(mon);
 }
-window.oDelLog=function(id){if(!confirm('Delete?'))return;fbDel('logs',id);toast('Deleted');};
-window.delAllLogs=function(){if(!confirm('DELETE ALL LOGS?'))return;fbClear('logs');toast('All deleted','r');};
+
+window.rebuildLogsCards = function(month){
+  const fs = filtStaff();
+  const grid = document.getElementById('logsGrid');
+  if(!grid) return;
+  if(!fs.length){ grid.innerHTML = '<div class="empty" style="grid-column:1/-1">No staff</div>'; return; }
+  grid.innerHTML = fs.map(s=>{
+    const logs = arr(DATA.logs).filter(l=>l.staffId===s.id && l.date.startsWith(month));
+    const revenue = logs.reduce((a,l)=>a+l.price,0);
+    const entries = logs.length;
+    return `<div class="logs-card" onclick="openStaffLogs('${s.id}','${month}')">
+      <div class="logs-card-top">
+        <div class="logs-card-av">${s.name.slice(0,2).toUpperCase()}</div>
+        <div>
+          <div style="font-size:.8rem;font-weight:800;color:var(--dark)">${s.name.split(' ')[0]}</div>
+          <div style="font-size:.58rem;color:var(--muted)">${s.branch}</div>
+        </div>
+      </div>
+      <div class="logs-card-stats">
+        <div class="logs-card-stat"><div class="logs-card-stat-v">${entries}</div><div class="logs-card-stat-l">Entries</div></div>
+        <div class="logs-card-stat"><div class="logs-card-stat-v" style="font-size:.78rem">₹${(revenue/1000).toFixed(1)}K</div><div class="logs-card-stat-l">Revenue</div></div>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+// ── Per-staff log drill-down ──
+let logsStaffId = null, logsMonth = null, logsSearch = '';
+
+window.openStaffLogs = function(sid, month){
+  logsStaffId = sid; logsMonth = month; logsSearch = '';
+  const s = DATA.staff[sid];
+  openBig(`📋 ${s.name.split(' ')[0]} · Logs`, buildStaffLogsHTML());
+  attachLogsSearchListener();
+};
+
+function attachLogsSearchListener(){
+  const inp = document.getElementById('logsSearchInp');
+  if(inp){
+    inp.addEventListener('input', function(){
+      logsSearch = this.value.toLowerCase();
+      const wrap = document.getElementById('logsListWrap');
+      if(wrap) wrap.innerHTML = buildLogsListHTML();
+    });
+  }
+}
+
+function buildStaffLogsHTML(){
+  const monLabel = new Date(logsMonth+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+  return `
+    <div class="logs-search-bar">
+      <input id="logsSearchInp" type="text" placeholder="Search service or price…" value="${logsSearch}">
+      <input type="month" value="${logsMonth}" onchange="logsSetMonth(this.value)">
+      <button class="btn bsm bgrn" onclick="exportStaffLogsCSV()">⬇ CSV</button>
+    </div>
+    <div style="font-size:.66rem;color:var(--muted);margin-bottom:8px">${monLabel}</div>
+    <div class="logs-list" id="logsListWrap">${buildLogsListHTML()}</div>
+  `;
+}
+
+function buildLogsListHTML(){
+  let logs = arr(DATA.logs)
+    .filter(l => l.staffId === logsStaffId && l.date.startsWith(logsMonth))
+    .sort((a,b) => b.date.localeCompare(a.date) || (b.ts||0)-(a.ts||0));
+
+  if(logsSearch){
+    logs = logs.filter(l => {
+      const svcText = (l.services||[]).join(' ').toLowerCase();
+      return svcText.includes(logsSearch) || String(l.price).includes(logsSearch);
+    });
+  }
+
+  if(!logs.length) return '<div class="logs-empty">No logs found</div>';
+
+  const total = logs.reduce((a,l)=>a+l.price, 0);
+  return `<div class="logs-summary-bar">
+    <span><b>${logs.length}</b> entries</span>
+    <span><b>Total: ₹${total.toLocaleString('en-IN')}</b></span>
+  </div>` + logs.map(l => `<div class="logs-row">
+    <div class="logs-row-left">
+      <div class="logs-row-date">${l.date}</div>
+      <div class="logs-row-svc">${(l.services||[]).join(', ')||'–'}</div>
+    </div>
+    <div class="logs-row-price">₹${l.price.toLocaleString('en-IN')}</div>
+    <button class="btn bsm bdng" onclick="oDelLog('${l.id}')" style="margin-left:7px">✕</button>
+  </div>`).join('');
+}
+
+window.logsSetMonth = function(month){
+  logsMonth = month;
+  document.getElementById('bigContent').innerHTML = buildStaffLogsHTML();
+  attachLogsSearchListener();
+};
+
+window.exportStaffLogsCSV = function(){
+  const s = DATA.staff[logsStaffId];
+  const logs = arr(DATA.logs)
+    .filter(l => l.staffId === logsStaffId && l.date.startsWith(logsMonth))
+    .sort((a,b) => a.date.localeCompare(b.date));
+  const rows = [['Date','Staff','Branch','Services','Price']];
+  logs.forEach(l => rows.push([l.date, s.name, s.branch||'', (l.services||[]).join('|'), l.price]));
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(rows.map(r=>r.join(',')).join('\n'));
+  a.download = `Logs_${s.name.replace(/\s+/g,'_')}_${logsMonth}.csv`;
+  a.click();
+  toast('📥 Exported!','g');
+};
+
+window.oDelLog = function(id){
+  if(!confirm('Delete?')) return;
+  fbDel('logs', id);
+  toast('Deleted');
+  setTimeout(()=>{
+    const wrap = document.getElementById('logsListWrap');
+    if(wrap) wrap.innerHTML = buildLogsListHTML();
+  }, 300);
+};
+window.delAllLogs = function(){
+  if(!confirm('DELETE ALL LOGS?')) return;
+  fbClear('logs');
+  toast('All deleted','r');
+};
 
 // ══════════════════════════════════════════════
-// ATTENDANCE
+// SECTION 1: Attendance — rebuild with auto-Leave + per-staff cards
 // ══════════════════════════════════════════════
-function rAttend(){
-  const fids=filtStaff().map(s=>s.id);
-  const atts=arr(DATA.attend).filter(a=>activeBranch==='ALL'||fids.includes(a.staffId)).sort((a,b)=>b.date.localeCompare(a.date));
-  const discs=arr(DATA.disc).filter(d=>activeBranch==='ALL'||fids.includes(d.staffId)).sort((a,b)=>b.date.localeCompare(a.date));
-  oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">🕐 Attendance</div><button class="delall" onclick="delAllAtt()">🗑 All</button></div>
-  <div class="tw"><table><thead><tr><th>Date</th><th>Staff</th><th>In</th><th>Out</th><th>Late</th><th>OT</th><th>Half</th><th>Edit</th></tr></thead>
-  <tbody>${!atts.length?'<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px">No records</td></tr>':
-  atts.map(a=>{const s=DATA.staff&&DATA.staff[a.staffId];return`<tr><td>${a.date}</td><td><b>${s?.name||'?'}</b></td><td>${a.in||'–'}</td><td>${a.out||'–'}</td><td>${a.lateMins>0?`<span class="badge by">${a.lateMins}m</span>`:'–'}</td><td>${(a.otHours||0)>0?a.otHours.toFixed(1)+'h':'–'}</td><td>${a.halfDay?'<span class="badge bpink">½</span>':'–'}</td><td><button class="btn bsm bedt" onclick="openAttEdit('${a.id}')">✏️</button></td></tr>`;}).join('')}
-  </tbody></table></div></div>
-  <div class="sec"><div class="sechdr"><div class="sectitle">⚡ Discipline</div><button class="btn bsm bpri" onclick="openDiscModal()">＋ Add</button><button class="delall" onclick="delAllDisc()">🗑 All</button></div>
-  <div class="tw"><table><thead><tr><th>Date</th><th>Staff</th><th>Type</th><th>Note</th><th>Penalty</th><th>Del</th></tr></thead>
-  <tbody>${!discs.length?'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No events</td></tr>':
-  discs.map(d=>{const s=DATA.staff&&DATA.staff[d.staffId];return`<tr><td>${d.date}</td><td><b>${s?.name||'?'}</b></td><td><span class="badge ${d.type==='late'?'by':'br'}">${d.type}</span></td><td>${d.note||'–'}</td><td><span class="badge br">-₹${d.type==='late'?100:200}</span></td><td><button class="btn bsm bdng" onclick="delDisc('${d.id}')">✕</button></td></tr>`;}).join('')}
-  </tbody></table></div></div>`;
+// Status rule:
+//   in & out present → Present
+//   in OR out present (partial) → Present (still counted, but considered partial)
+//   in & out both empty/missing record → Leave (this is the new rule)
+//   approved leave for date → also Leave
+// Past dates with no attendance record at all are treated as Leave (per spec).
+// Working days exclude future dates and Sundays.
+
+function isSunday(dateStr){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  return new Date(y, m-1, d).getDay() === 0;
 }
+
+function getAttStatus(staffId, dateStr){
+  if(dateStr > today()) return 'future';
+  if(isSunday(dateStr)) return 'weekend';
+  // Check if on approved leave
+  const onLeave = arr(DATA.leaves).some(l =>
+    l.staffId===staffId && l.status==='approved' &&
+    dateStr >= l.from && dateStr <= l.to
+  );
+  if(onLeave) return 'leave';
+  // Find attendance record
+  const att = arr(DATA.attend).find(a => a.staffId===staffId && a.date===dateStr);
+  if(!att) return 'leave';        // no record = leave (new rule)
+  if(!att.in && !att.out) return 'leave';
+  return 'present';
+}
+
+function calcAttSummary(staffId, monthStr){
+  // monthStr like '2026-05'
+  const [y,m] = monthStr.split('-').map(Number);
+  const daysInMonth = new Date(y, m, 0).getDate();
+  let present=0, leave=0, absent=0, workingDays=0;
+  for(let d=1; d<=daysInMonth; d++){
+    const dateStr = `${y}-${pad(m)}-${pad(d)}`;
+    if(dateStr > today()) continue;
+    if(isSunday(dateStr)) continue;
+    workingDays++;
+    const st = getAttStatus(staffId, dateStr);
+    if(st==='present') present++;
+    else if(st==='leave') leave++;
+    else absent++; // not used by new rule but kept for safety
+  }
+  const pct = workingDays>0 ? Math.round((present/workingDays)*100) : 0;
+  return {present, leave, absent, workingDays, pct};
+}
+
+function rAttend(){
+  const mon = thisMonth();
+  const fs = filtStaff();
+
+  oc().innerHTML = `<div class="sec">
+    <div class="sechdr">
+      <div class="sectitle">🕐 Attendance</div>
+      <input type="month" id="attMonPick" value="${mon}" onchange="rebuildAttCards(this.value)" style="padding:5px 8px;border:1.5px solid var(--border);border-radius:7px;font-size:.73rem;outline:none">
+    </div>
+    <div class="ibox">Tap any staff card to view calendar &amp; records. Missing records auto-count as Leave.</div>
+    <div class="att-staff-grid" id="attStaffGrid"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sechdr">
+      <div class="sectitle">📋 All Records</div>
+      <button class="delall" onclick="delAllAtt()">🗑 All</button>
+    </div>
+    <div class="tw" id="attRecordsTable"></div>
+  </div>
+
+  <div class="sec">
+    <div class="sechdr">
+      <div class="sectitle">⚡ Discipline</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn bsm bpri" onclick="openDiscModal()">＋ Add</button>
+        <button class="delall" onclick="delAllDisc()">🗑 All</button>
+      </div>
+    </div>
+    <div class="tw" id="discTable"></div>
+  </div>`;
+
+  rebuildAttCards(mon);
+  buildAttRecordsTable();
+  buildDiscTable();
+}
+
+window.rebuildAttCards = function(month){
+  const fs = filtStaff();
+  const grid = document.getElementById('attStaffGrid');
+  if(!fs.length){ grid.innerHTML = '<div class="empty" style="grid-column:1/-1">No staff</div>'; return; }
+  grid.innerHTML = fs.map(s=>{
+    const sm = calcAttSummary(s.id, month);
+    return `<div class="att-card" onclick="openAttProfile('${s.id}','${month}')">
+      <div class="att-card-top">
+        <div class="att-card-av">${s.name.slice(0,2).toUpperCase()}</div>
+        <div>
+          <div class="att-card-name">${s.name.split(' ')[0]}</div>
+          <div class="att-card-sub">${s.branch} · ${sm.workingDays} working days</div>
+        </div>
+      </div>
+      <div class="att-card-stats">
+        <div class="att-stat p"><div class="att-stat-v">${sm.present}</div><div class="att-stat-l">Present</div></div>
+        <div class="att-stat l"><div class="att-stat-v">${sm.leave}</div><div class="att-stat-l">Leave</div></div>
+        <div class="att-stat a"><div class="att-stat-v">${sm.absent}</div><div class="att-stat-l">Absent</div></div>
+      </div>
+      <div class="att-card-pct">
+        <span>Attendance</span>
+        <div class="att-pct-bar"><div class="att-pct-fill" style="width:${sm.pct}%"></div></div>
+        <span style="color:${sm.pct>=85?'var(--green)':sm.pct>=70?'var(--yellow)':'var(--red)'}">${sm.pct}%</span>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+function buildAttRecordsTable(){
+  const fids = filtStaff().map(s=>s.id);
+  const atts = arr(DATA.attend).filter(a=>activeBranch==='ALL'||fids.includes(a.staffId)).sort((a,b)=>b.date.localeCompare(a.date));
+  const el = document.getElementById('attRecordsTable'); if(!el) return;
+  el.innerHTML = `<table>
+    <thead><tr><th>Date</th><th>Staff</th><th>In</th><th>Out</th><th>Late</th><th>OT</th><th>Half</th><th>Edit</th></tr></thead>
+    <tbody>${!atts.length?'<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:16px">No records</td></tr>':
+    atts.slice(0,100).map(a=>{
+      const s=DATA.staff&&DATA.staff[a.staffId];
+      return `<tr><td>${a.date}</td><td><b>${s?.name||'?'}</b></td><td>${a.in||'–'}</td><td>${a.out||'–'}</td><td>${a.lateMins>0?`<span class="badge by">${a.lateMins}m</span>`:'–'}</td><td>${(a.otHours||0)>0?a.otHours.toFixed(1)+'h':'–'}</td><td>${a.halfDay?'<span class="badge bpink">½</span>':'–'}</td><td><button class="btn bsm bedt" onclick="openAttEdit('${a.id}')">✏️</button></td></tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+function buildDiscTable(){
+  const fids = filtStaff().map(s=>s.id);
+  const discs = arr(DATA.disc).filter(d=>activeBranch==='ALL'||fids.includes(d.staffId)).sort((a,b)=>b.date.localeCompare(a.date));
+  const el = document.getElementById('discTable'); if(!el) return;
+  el.innerHTML = `<table>
+    <thead><tr><th>Date</th><th>Staff</th><th>Type</th><th>Note</th><th>Penalty</th><th>Del</th></tr></thead>
+    <tbody>${!discs.length?'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No events</td></tr>':
+    discs.map(d=>{
+      const s=DATA.staff&&DATA.staff[d.staffId];
+      return `<tr><td>${d.date}</td><td><b>${s?.name||'?'}</b></td><td><span class="badge ${d.type==='late'?'by':'br'}">${d.type}</span></td><td>${d.note||'–'}</td><td><span class="badge br">-₹${d.type==='late'?100:200}</span></td><td><button class="btn bsm bdng" onclick="delDisc('${d.id}')">✕</button></td></tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+// ── Attendance Profile (calendar + records) ──
+let profileSid = null, profileMonth = null;
+
+window.openAttProfile = function(sid, month){
+  profileSid = sid; profileMonth = month;
+  const s = DATA.staff[sid];
+  openBig(`🕐 ${s.name} · Attendance`, buildAttProfileHTML(sid, month));
+  // After insertion into bigContent, hook up calendar nav
+};
+
+function buildAttProfileHTML(sid, month){
+  const s = DATA.staff[sid];
+  const sm = calcAttSummary(sid, month);
+  const [y,m] = month.split('-').map(Number);
+  const monLabel = new Date(y, m-1, 1).toLocaleDateString('en-IN',{month:'long', year:'numeric'});
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const firstDow = new Date(y, m-1, 1).getDay(); // 0=Sun
+  const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  // Build calendar grid
+  let calCells = '';
+  // Blank cells before day 1
+  for(let i=0; i<firstDow; i++) calCells += '<div class="cal-day blank"></div>';
+  for(let d=1; d<=daysInMonth; d++){
+    const dateStr = `${y}-${pad(m)}-${pad(d)}`;
+    const status = getAttStatus(sid, dateStr);
+    calCells += `<div class="cal-day ${status}"><div class="cal-day-num">${d}</div>${(status==='present'||status==='leave'||status==='absent')?'<div class="cal-day-dot"></div>':''}</div>`;
+  }
+
+  // Records list (for this month, sorted)
+  const records = arr(DATA.attend)
+    .filter(a=>a.staffId===sid && a.date.startsWith(month))
+    .sort((a,b)=>b.date.localeCompare(a.date));
+
+  return `
+    <div class="cards" style="margin-bottom:10px">
+      <div class="scard"><div class="scl">Present</div><div class="scv" style="color:var(--green)">${sm.present}</div></div>
+      <div class="scard"><div class="scl">Leave</div><div class="scv" style="color:var(--blue)">${sm.leave}</div></div>
+      <div class="scard"><div class="scl">Attendance %</div><div class="scv" style="color:${sm.pct>=85?'var(--green)':sm.pct>=70?'var(--yellow)':'var(--red)'}">${sm.pct}%</div></div>
+    </div>
+
+    <div class="cal-wrap">
+      <div class="cal-hdr">
+        <div class="cal-nav">
+          <button onclick="profileShiftMonth(-1)">←</button>
+          <div class="cal-mon">${monLabel}</div>
+          <button onclick="profileShiftMonth(1)">→</button>
+        </div>
+        <input type="month" value="${month}" onchange="profileSetMonth(this.value)" style="padding:4px 6px;border:1.5px solid var(--border);border-radius:6px;font-size:.7rem;outline:none">
+      </div>
+      <div class="cal-grid">
+        ${DOW.map(d=>`<div class="cal-dow">${d}</div>`).join('')}
+        ${calCells}
+      </div>
+      <div class="cal-legend">
+        <div class="cal-leg"><div class="cal-leg-box p"></div>Present</div>
+        <div class="cal-leg"><div class="cal-leg-box l"></div>Leave</div>
+        <div class="cal-leg"><div class="cal-leg-box a"></div>Absent</div>
+      </div>
+    </div>
+
+    <div class="profile-records">
+      <div class="sectitle" style="margin-bottom:7px;font-size:.78rem">📋 Records this month</div>
+      ${records.length ? records.map(r=>`<div class="profile-rec">
+        <div><div class="profile-rec-date">${r.date}</div>
+        <div class="profile-rec-times">In: ${r.in||'–'} · Out: ${r.out||'–'} ${r.lateMins>0?'· ⚠️ '+r.lateMins+'m late':''} ${r.otHours>0?'· OT '+r.otHours.toFixed(1)+'h':''} ${r.halfDay?'· ½ day':''}</div></div>
+        <button class="btn bsm bedt" onclick="openAttEdit('${r.id}')">✏️</button>
+      </div>`).join('') : '<div style="color:var(--muted);text-align:center;padding:10px;font-size:.72rem">No records this month</div>'}
+    </div>
+  `;
+}
+
+window.profileShiftMonth = function(delta){
+  const [y,m] = profileMonth.split('-').map(Number);
+  const d = new Date(y, m-1+delta, 1);
+  profileMonth = `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+  document.getElementById('bigContent').innerHTML = buildAttProfileHTML(profileSid, profileMonth);
+};
+
+window.profileSetMonth = function(month){
+  profileMonth = month;
+  document.getElementById('bigContent').innerHTML = buildAttProfileHTML(profileSid, profileMonth);
+};
 window.openDiscModal=function(){popSel('dStaff');document.getElementById('dDate').value=today();document.getElementById('discModal').classList.add('open');};
 window.saveDisc=function(){
   const sid=document.getElementById('dStaff').value,date=document.getElementById('dDate').value,type=document.getElementById('dType').value,note=document.getElementById('dNote').value.trim();
@@ -1772,65 +2520,6 @@ window.saveAttEdit=function(){
 window.delAllDisc=function(){if(!confirm('Delete all discipline?'))return;fbClear('disc');toast('All deleted','r');};
 
 // ══════════════════════════════════════════════
-// TARGETS
-// ══════════════════════════════════════════════
-function rTargets(){
-  const fids=filtStaff().map(s=>s.id);
-  const tgts=arr(DATA.targets).filter(t=>activeBranch==='ALL'||fids.includes(t.staffId)).sort((a,b)=>b.date.localeCompare(a.date));
-  oc().innerHTML=`<div class="sec"><div class="sechdr"><div class="sectitle">🎯 Targets</div><div style="display:flex;gap:6px"><button class="btn bsm bpri" onclick="openTargetModal()">＋ Override</button><button class="delall" onclick="delAllTargets()">🗑 All</button></div></div>
-  <div class="ibox">Overrides default target for specific date.</div>
-  <div class="tw"><table><thead><tr><th>Staff</th><th>Date</th><th>Target</th><th>Sales</th><th>%</th><th>Del</th></tr></thead>
-  <tbody>${!tgts.length?'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px">No overrides</td></tr>':
-  tgts.map(t=>{const s=DATA.staff&&DATA.staff[t.staffId];const ach=arr(DATA.logs).filter(l=>l.staffId===t.staffId&&l.date===t.date).reduce((a,l)=>a+l.price,0);const pct=t.amount>0?Math.round((ach/t.amount)*100):0;return`<tr><td><b>${s?.name||'?'}</b></td><td>${t.date}</td><td>₹${t.amount.toLocaleString('en-IN')}</td><td>₹${ach.toLocaleString('en-IN')}</td><td><span class="badge ${pct>=100?'bg':pct>=70?'by':'br'}">${pct}%</span></td><td><button class="btn bsm bdng" onclick="delTarget('${t.id}')">✕</button></td></tr>`;}).join('')}
-  </tbody></table></div></div>
-
-  <!-- Target achievement chart -->
-  <div class="sec">
-    <div class="sechdr"><div class="sectitle">📊 Achievement This Month</div></div>
-    <div class="chart-wrap"><canvas id="chartTargets" height="130"></canvas></div>
-  </div>`;
-  buildTargetChart();
-}
-
-function buildTargetChart(){
-  const mon=thisMonth();
-  const fs=filtStaff();
-  const labels=fs.map(s=>s.name.split(' ')[0]);
-  const targets=fs.map(s=>(s.defaultTarget||0)*26);
-  const achieved=fs.map(s=>arr(DATA.logs).filter(l=>l.staffId===s.id&&l.date.startsWith(mon)).reduce((a,l)=>a+l.price,0));
-  makeChart('chartTargets',{
-    type:'bar',
-    data:{
-      labels,
-      datasets:[
-        {label:'Target',data:targets,backgroundColor:'rgba(234,224,204,.8)',borderRadius:4,borderSkipped:false},
-        {label:'Achieved',data:achieved,backgroundColor:'rgba(201,168,76,.85)',borderRadius:4,borderSkipped:false}
-      ]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:true,
-      plugins:{legend:{labels:{font:{size:10}}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ₹${ctx.raw.toLocaleString('en-IN')}`}}},
-      scales:{
-        y:{ticks:{callback:v=>'₹'+(v/1000).toFixed(0)+'K',font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},
-        x:{ticks:{font:{size:10}},grid:{display:false}}
-      }
-    }
-  });
-}
-
-window.openTargetModal=function(){popSel('tStaff');document.getElementById('tDate').value=today();document.getElementById('tAmt').value='';document.getElementById('targetModal').classList.add('open');};
-window.saveTarget=function(){
-  const sid=document.getElementById('tStaff').value,date=document.getElementById('tDate').value,amount=parseFloat(document.getElementById('tAmt').value)||0;
-  if(!sid||!date||!amount){toast('Fill all fields','r');return;}
-  const ex=arr(DATA.targets).find(t=>t.staffId===sid&&t.date===date);
-  const id=ex?.id||('tgt_'+uid());
-  fbSave('targets',id,{id,staffId:sid,date,amount});
-  closeM('targetModal');toast('🎯 Saved!','g');
-};
-window.delTarget=function(id){if(!confirm('Delete?'))return;fbDel('targets',id);toast('Deleted');};
-window.delAllTargets=function(){if(!confirm('Delete all targets?'))return;fbClear('targets');toast('All deleted','r');};
-
-// ══════════════════════════════════════════════
 // RANK
 // ══════════════════════════════════════════════
 function rRank(){
@@ -1898,7 +2587,8 @@ function calcSal(s,month){
   const sales=logs.reduce((a,l)=>a+l.price,0);
   const bd={};logs.forEach(l=>{if(!bd[l.date])bd[l.date]=0;bd[l.date]+=l.price;});
   const tgt=Object.keys(bd).reduce((a,d)=>a+getTarget(s.id,d),0)||((s.defaultTarget||0)*26);
-  const inc=Math.round(Math.max(0,sales-tgt)*.05);
+  const incRate = getIncRate(s);
+  const inc=Math.round(Math.max(0,sales-tgt)*incRate);
   const atts=arr(DATA.attend).filter(a=>a.staffId===s.id&&a.date.startsWith(month)&&a.out);
   const ot=atts.reduce((a,a2)=>a+(a2.otHours||0),0);
   const otInc=sales>=tgt?(ot>=2?200:ot>=1?100:ot>0?50:0):0;
@@ -1909,7 +2599,7 @@ function calcSal(s,month){
   const halfDed=Math.round(halfDays*(s.salary/26)*.5);
   const approvedLvs=arr(DATA.leaves).filter(l=>l.staffId===s.id&&l.status==='approved'&&l.from.startsWith(month)).length;
   const lvDed=Math.max(0,approvedLvs-LEAVE_LIMIT)*Math.round(s.salary/26);
-  return{sales,tgt,inc,ot,otInc,late,vio,pen,halfDays,halfDed,approvedLvs,lvDed,final:s.salary+inc+otInc-pen-halfDed-lvDed};
+  return{sales,tgt,inc,incPct:Math.round(incRate*100),ot,otInc,late,vio,pen,halfDays,halfDed,approvedLvs,lvDed,final:s.salary+inc+otInc-pen-halfDed-lvDed};
 }
 
 // ══════════════════════════════════════════════
@@ -2026,7 +2716,7 @@ window.showSal=function(sid,month){
     <div class="sr"><span>Fixed Salary</span><b>₹${(s.salary||0).toLocaleString('en-IN')}</b></div>
     <div class="sr"><span>Sales</span><span>₹${d.sales.toLocaleString('en-IN')}</span></div>
     <div class="sr"><span>Target</span><span>₹${d.tgt.toLocaleString('en-IN')}</span></div>
-    <div class="sr"><span>Incentive (5%)</span><span style="color:var(--green)">+₹${d.inc.toLocaleString('en-IN')}</span></div>
+    <div class="sr"><span>Incentive (${d.incPct}%)</span><span style="color:var(--green)">+₹${d.inc.toLocaleString('en-IN')}</span></div>
     <div class="sr"><span>OT Incentive (${d.ot.toFixed(1)}h)</span><span style="color:var(--blue)">+₹${d.otInc.toLocaleString('en-IN')}</span></div>
     <div class="sr"><span>Late (${d.late}×₹100)</span><span style="color:var(--red)">-₹${(d.late*100).toLocaleString('en-IN')}</span></div>
     <div class="sr"><span>Violation (${d.vio}×₹200)</span><span style="color:var(--red)">-₹${(d.vio*200).toLocaleString('en-IN')}</span></div>
@@ -2306,7 +2996,7 @@ window.changeOwnerPin=function(){
 
 // PRIORITY 8: Export JSON backup
 window.exportBackup=function(){
-  const backup={staff:DATA.staff,logs:DATA.logs,attend:DATA.attend,targets:DATA.targets,leaves:DATA.leaves,disc:DATA.disc,feedback:DATA.feedback,exportedAt:new Date().toISOString()};
+  const backup={staff:DATA.staff,logs:DATA.logs,attend:DATA.attend,leaves:DATA.leaves,disc:DATA.disc,settings:DATA.settings,exportedAt:new Date().toISOString()};
   const a=document.createElement('a');
   a.href='data:application/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(backup,null,2));
   a.download=`MissMams_Backup_${today()}.json`;a.click();
@@ -2325,7 +3015,7 @@ window.importBackup=function(input){
       const data=JSON.parse(e.target.result);
       if(!data.staff&&!data.logs){toast('Invalid backup file','r');return;}
       if(!confirm(`Import backup from ${data.exportedAt||'unknown date'}? This will overwrite current data.`))return;
-      const paths=['staff','logs','attend','targets','leaves','disc','feedback'];
+      const paths=['staff','logs','attend','leaves','disc','settings'];
       Promise.all(paths.map(p=>data[p]?fbRef(p).set(data[p]):Promise.resolve())).then(()=>toast('✅ Backup imported!','g')).catch(()=>toast('Import failed','r'));
     }catch(err){toast('Invalid JSON file','r');}
   };
@@ -2334,7 +3024,7 @@ window.importBackup=function(input){
 };
 
 window.clearAllData=function(){
-  const paths=['logs','attend','targets','leaves','disc','feedback'];
+  const paths=['logs','attend','leaves','disc'];
   Promise.all(paths.map(p=>fbClear(p))).then(()=>toast('All data cleared','r'));
 };
 
