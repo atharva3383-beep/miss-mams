@@ -3060,6 +3060,194 @@ function openBig(title,html){
   document.getElementById('bigContent').innerHTML=html;
   document.getElementById('bigModal').classList.add('open');
 }
+
+// ════════════════════════════════════════════════════════════════
+// SAFETY NET — Global error display + bulletproof rOverview override
+// JavaScript function hoisting ensures the LAST declaration of
+// rOverview wins. This is intentionally placed at end of script.
+// ════════════════════════════════════════════════════════════════
+
+window.addEventListener('error', function(e){
+  console.error('Uncaught error:', e);
+  try {
+    const root = document.getElementById('oContent');
+    if (root && (!root.innerHTML || root.innerHTML.trim() === '')) {
+      root.innerHTML = '<div style="margin:14px;padding:14px;background:#FDEDEC;border:1px solid #fca5a5;border-radius:10px;color:#C0392B"><b>⚠️ JavaScript Error:</b><br>' + (e.message || 'unknown') + '<br><small style="color:#8A7560">at ' + (e.filename || '?') + ':' + (e.lineno || 0) + '</small></div>';
+    }
+  } catch(_){}
+});
+
+function rOverview() {
+  const root = document.getElementById('oContent');
+  if (!root) { console.error('rOverview: #oContent not found'); return; }
+
+  // STEP 1: Show loading state IMMEDIATELY (forced before any computation)
+  root.innerHTML = '<div style="padding:30px;text-align:center;color:#8A7560;font-size:14px">⏳ Loading dashboard…</div>';
+
+  // STEP 2: Defer heavy work so loading state actually renders, then do it
+  setTimeout(function(){
+    if (curOTab !== 'overview') return; // user switched tabs already
+
+    try {
+      const fs = (typeof filtStaff === 'function') ? filtStaff() : [];
+      const fids = fs.map(function(s){ return s.id; });
+      const tod = (typeof today === 'function') ? today() : new Date().toISOString().slice(0,10);
+      const mon = (typeof thisMonth === 'function') ? thisMonth() : tod.slice(0,7);
+      const prev = (typeof prevMonth === 'function') ? prevMonth() : tod.slice(0,7);
+
+      const dataLogs = (typeof DATA !== 'undefined' && DATA && DATA.logs) ? Object.values(DATA.logs) : [];
+      const dataLeaves = (typeof DATA !== 'undefined' && DATA && DATA.leaves) ? Object.values(DATA.leaves) : [];
+      const dataStaff = (typeof DATA !== 'undefined' && DATA && DATA.staff) ? DATA.staff : {};
+
+      const inB = function(l){ return activeBranch === 'ALL' || fids.indexOf(l.staffId) !== -1; };
+      const ml = dataLogs.filter(function(l){ return l.date && l.date.indexOf(mon)===0 && inB(l); });
+      const pl = dataLogs.filter(function(l){ return l.date && l.date.indexOf(prev)===0 && inB(l); });
+      const tl = dataLogs.filter(function(l){ return l.date===tod && inB(l); });
+
+      const tt = tl.reduce(function(a,l){ return a+(l.price||0); }, 0);
+      const totalRev = ml.reduce(function(a,l){ return a+(l.price||0); }, 0);
+      const prevRev = pl.reduce(function(a,l){ return a+(l.price||0); }, 0);
+      const totalClients = ml.length;
+      const avgBill = totalClients>0 ? Math.round(totalRev/totalClients) : 0;
+      const growth = prevRev>0 ? Math.round(((totalRev-prevRev)/prevRev)*100) : null;
+      const pend = dataLeaves.filter(function(l){return l.status==='pending';}).length;
+
+      let totalInc = 0;
+      fs.forEach(function(s){
+        const sLogs = ml.filter(function(l){return l.staffId===s.id;});
+        const sSales = sLogs.reduce(function(a,l){return a+(l.price||0);},0);
+        const sTgt = (s.defaultTarget||0) * 26;
+        const rate = ((s.incentivePct!=null ? s.incentivePct : 5) / 100);
+        if (sSales > sTgt) totalInc += (sSales - sTgt) * rate;
+      });
+
+      let aggSales = 0, aggTargets = 0;
+      fs.forEach(function(s){
+        aggSales += ml.filter(function(l){return l.staffId===s.id;}).reduce(function(a,l){return a+(l.price||0);},0);
+        aggTargets += (s.defaultTarget||0) * 26;
+      });
+      const targetPct = aggTargets>0 ? Math.round((aggSales/aggTargets)*100) : 0;
+
+      let totalP = 0, totalWD = 0;
+      if (typeof calcAttSummary === 'function') {
+        fs.forEach(function(s){
+          try {
+            const sm = calcAttSummary(s.id, mon);
+            totalP += sm.present || 0;
+            totalWD += sm.workingDays || 0;
+          } catch(_){}
+        });
+      }
+      const attPct = totalWD>0 ? Math.round((totalP/totalWD)*100) : 0;
+      const attDisplay = totalWD>0 ? (attPct + '%') : '–';
+
+      const staffRev = {};
+      ml.forEach(function(l){ if(!staffRev[l.staffId]) staffRev[l.staffId]=0; staffRev[l.staffId]+=(l.price||0); });
+      const sortedStaff = Object.keys(staffRev).map(function(k){return [k,staffRev[k]];}).sort(function(a,b){return b[1]-a[1];});
+      const topStaffId = sortedStaff.length>0 ? sortedStaff[0][0] : null;
+      const topStaff = topStaffId ? dataStaff[topStaffId] : null;
+
+      const svcMap = {};
+      ml.forEach(function(l){
+        const services = l.services || [];
+        if (services.length===0) return;
+        const split = (l.price||0) / services.length;
+        services.forEach(function(sv){
+          const k = String(sv).toLowerCase().trim();
+          if(!svcMap[k]) svcMap[k] = {name:sv, revenue:0, count:0};
+          svcMap[k].revenue += split; svcMap[k].count++;
+        });
+      });
+      const svcArr = Object.keys(svcMap).map(function(k){return svcMap[k];}).sort(function(a,b){return b.revenue-a.revenue;});
+      const topSvc = svcArr.length>0 ? svcArr[0] : null;
+
+      const catRev = {}, prevCatRev = {};
+      const catFn = (typeof categorizeService === 'function') ? categorizeService : function(){return 'Others';};
+      [[ml,catRev],[pl,prevCatRev]].forEach(function(pair){
+        pair[0].forEach(function(l){
+          const svs = l.services || [];
+          if (svs.length===0) return;
+          const split = (l.price||0) / svs.length;
+          svs.forEach(function(sv){
+            const c = catFn(sv);
+            pair[1][c] = (pair[1][c]||0) + split;
+          });
+        });
+      });
+      const catArr = Object.keys(catRev).map(function(k){return [k,catRev[k]];}).sort(function(a,b){return b[1]-a[1];});
+      const topCat = catArr.length>0 ? catArr[0] : null;
+      let bestCat = null, bestG = -Infinity;
+      Object.keys(catRev).forEach(function(c){
+        const r = catRev[c], p = prevCatRev[c]||0;
+        if (p>0){ const g = Math.round(((r-p)/p)*100); if (g>bestG){ bestG=g; bestCat=c; } }
+      });
+
+      const monLabel = new Date(mon+'-01').toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+      const targetCls = targetPct>=100?'green':targetPct>=70?'yellow':'red';
+      const attCls = attPct>=85?'green':attPct>=70?'yellow':'red';
+      const growthCls = growth===null?'':growth>=0?'green':'red';
+      const growthText = growth===null?'–':((growth>=0?'+':'')+growth+'%');
+
+      let growthBadge = '<div class="exec-kpi-sub">no comparison</div>';
+      if (growth !== null) {
+        if (growth>=0) growthBadge = '<div class="exec-kpi-sub up">↑ +'+growth+'% vs last month</div>';
+        else growthBadge = '<div class="exec-kpi-sub down">↓ '+Math.abs(growth)+'% vs last month</div>';
+      }
+
+      const topStaffName = topStaff ? topStaff.name.split(' ')[0] : '–';
+      const topStaffSub = topStaff ? ('₹'+Math.round(staffRev[topStaffId]).toLocaleString('en-IN')) : 'no data';
+      const topSvcName = topSvc ? topSvc.name : '–';
+      const topSvcSub = topSvc ? ('₹'+Math.round(topSvc.revenue).toLocaleString('en-IN')) : '';
+      const topCatName = topCat ? topCat[0] : '–';
+      const topCatSub = topCat ? ('₹'+Math.round(topCat[1]).toLocaleString('en-IN')) : '';
+      const bestCatName = bestCat || '–';
+      const bestCatSub = bestCat ? ('+'+bestG+'%') : 'no comp data';
+      const todaySub = tl.length+' entries'+(pend?(' · '+pend+' lvs pending'):'');
+
+      let html = '';
+      html += '<div class="exec-section-title">📊 Executive Overview · '+monLabel+'</div>';
+      html += '<div class="exec-grid">';
+      html += '<div class="exec-kpi"><div class="exec-kpi-icon">💰</div><div class="exec-kpi-label">Total Revenue</div><div class="exec-kpi-value gold">₹'+totalRev.toLocaleString('en-IN')+'</div>'+growthBadge+'</div>';
+      html += '<div class="exec-kpi"><div class="exec-kpi-icon">📊</div><div class="exec-kpi-label">Revenue Growth</div><div class="exec-kpi-value '+growthCls+'">'+growthText+'</div><div class="exec-kpi-sub">month over month</div></div>';
+      html += '<div class="exec-kpi"><div class="exec-kpi-icon">👥</div><div class="exec-kpi-label">Total Clients</div><div class="exec-kpi-value">'+totalClients+'</div><div class="exec-kpi-sub">entries this month</div></div>';
+      html += '<div class="exec-kpi"><div class="exec-kpi-icon">💳</div><div class="exec-kpi-label">Avg Bill Value</div><div class="exec-kpi-value">₹'+avgBill.toLocaleString('en-IN')+'</div><div class="exec-kpi-sub">per client</div></div>';
+      html += '<div class="exec-kpi"><div class="exec-kpi-icon">🎯</div><div class="exec-kpi-label">Target Achieved</div><div class="exec-kpi-value '+targetCls+'">'+targetPct+'%</div><div class="exec-kpi-sub">studio-wide</div></div>';
+      html += '<div class="exec-kpi"><div class="exec-kpi-icon">🕐</div><div class="exec-kpi-label">Attendance</div><div class="exec-kpi-value '+attCls+'">'+attDisplay+'</div><div class="exec-kpi-sub">working days</div></div>';
+      html += '<div class="exec-kpi"><div class="exec-kpi-icon">🎁</div><div class="exec-kpi-label">Incentives</div><div class="exec-kpi-value green">₹'+Math.round(totalInc).toLocaleString('en-IN')+'</div><div class="exec-kpi-sub">this month</div></div>';
+      html += '<div class="exec-kpi"><div class="exec-kpi-icon">🥇</div><div class="exec-kpi-label">Top Staff</div><div class="exec-kpi-value gold">'+topStaffName+'</div><div class="exec-kpi-sub">'+topStaffSub+'</div></div>';
+      html += '<div class="exec-kpi"><div class="exec-kpi-icon">💅</div><div class="exec-kpi-label">Top Service</div><div class="exec-kpi-value gold" style="font-size:.88rem">'+topSvcName+'</div><div class="exec-kpi-sub">'+topSvcSub+'</div></div>';
+      html += '<div class="exec-kpi"><div class="exec-kpi-icon">🗂</div><div class="exec-kpi-label">Top Category</div><div class="exec-kpi-value gold">'+topCatName+'</div><div class="exec-kpi-sub">'+topCatSub+'</div></div>';
+      html += '<div class="exec-kpi"><div class="exec-kpi-icon">📈</div><div class="exec-kpi-label">Best Growth</div><div class="exec-kpi-value green">'+bestCatName+'</div><div class="exec-kpi-sub up">'+bestCatSub+'</div></div>';
+      html += '<div class="exec-kpi"><div class="exec-kpi-icon">📅</div><div class="exec-kpi-label">Today</div><div class="exec-kpi-value">₹'+tt.toLocaleString('en-IN')+'</div><div class="exec-kpi-sub">'+todaySub+'</div></div>';
+      html += '</div>';
+
+      html += '<div class="sec"><div class="sechdr"><div class="sectitle">👥 Today\'s Staff Progress</div><span style="font-size:.62rem;color:var(--muted)">'+tod+'</span></div><div class="sp-grid" id="spGrid"></div></div>';
+      html += '<div style="text-align:right;margin-bottom:10px"><button class="btn bsm bgrn" onclick="exportCSV()">⬇ Export CSV</button></div>';
+      html += '<div class="sec"><div class="sechdr"><div class="sectitle">🧠 Smart Insights</div></div><div id="insightsContainer"></div></div>';
+      html += '<div class="sec"><div class="sechdr"><div class="sectitle">📈 Revenue — Last 7 Days</div></div><div class="chart-wrap"><canvas id="chartRevenue" height="130"></canvas></div></div>';
+      html += '<div class="sec"><div class="sechdr"><div class="sectitle">🏢 Branch Comparison</div></div><div class="chart-wrap"><canvas id="chartBranch" height="110"></canvas></div></div>';
+      html += '<div class="sec"><div class="sechdr"><div class="sectitle">👥 Staff Performance (This Month)</div></div><div class="chart-wrap"><canvas id="chartStaff" height="130"></canvas></div></div>';
+
+      let summaryHTML = '';
+      try { if (typeof buildTodaySummary === 'function') summaryHTML = buildTodaySummary(tl); } catch(_){}
+      if (summaryHTML) html += '<div class="sec"><div class="sechdr"><div class="sectitle">📅 Today\'s Summary</div></div>'+summaryHTML+'</div>';
+
+      root.innerHTML = html;
+
+      try { if (typeof buildInsights === 'function') buildInsights(fs, fids, ml, pl, mon); } catch(_){}
+      try { if (typeof buildTodayStaffProgress === 'function') buildTodayStaffProgress(fs, tod); } catch(_){}
+      try { if (typeof buildRevenueChart === 'function') buildRevenueChart(); } catch(_){}
+      try { if (typeof buildBranchChart === 'function') buildBranchChart(mon); } catch(_){}
+      try { if (typeof buildStaffPerfChart === 'function') buildStaffPerfChart(fs, mon); } catch(_){}
+
+    } catch (err) {
+      console.error('rOverview error:', err);
+      const msg = String((err && err.message) || err || 'Unknown error');
+      const stack = String((err && err.stack) || '');
+      root.innerHTML = '<div style="margin:14px;padding:18px;background:#FDEDEC;border:1px solid #fca5a5;border-radius:12px;color:#C0392B"><h3 style="margin:0 0 10px;font-size:16px">⚠️ Dashboard Error</h3><div style="font-weight:700;margin-bottom:8px;font-size:14px">'+msg+'</div><pre style="font-size:11px;color:#8A7560;background:#fff;padding:10px;border-radius:6px;overflow:auto;max-height:240px;border:1px solid #EAE0CC">'+stack+'</pre><button onclick="oTab(\'overview\',document.querySelector(\'#oNav button\'))" style="margin-top:12px;padding:8px 16px;background:linear-gradient(135deg,#8B6914,#C9A84C);color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700">🔄 Retry</button></div>';
+    }
+  }, 0);
+}
 </script>
 </body>
 </html>
